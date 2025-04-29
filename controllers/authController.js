@@ -6,6 +6,14 @@ dotenv.config();
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const { processReferral } = require('../services/referralService');
+const twilio = require('twilio');
+
+// Replace with your real credentials
+const accountSid = 'ACfe483e3f616b089070f53d88efe3d5f8';
+const authToken = '10343bdc8985a7a2d9fb066ca25f507b';
+const twilioPhone = '+14433396743';
+
+const client = twilio(accountSid, authToken);
 
 const otpStore = {};
 
@@ -23,38 +31,37 @@ function isValidEmail(email) {
 }
 
 exports.requestOtp = async (req, res) => {
-  const { name, email } = req.body;
+  const { name, number } = req.body;
 
-  if (!name || !email) {
+  if (!name || !number) {
     return res.status(400).json({ success: false, message: 'Name and Email are required' });
   }
 
-  const userExists = await User.findOne({ email });
-  if (userExists) {
-    return res.status(400).json({ success: false, message: 'User already exists' });
-  }
+  // const userExists = await User.findOne({ email });
+  // if (userExists) {
+  //   return res.status(400).json({ success: false, message: 'User already exists' });
+  // }
 
-  if (!isValidEmail(email)) {
-    return res.status(400).json({ success: false, message: 'Invalid email format' });
-  }
+//   if (!isValidEmail(email)) {
+//     return res.status(400).json({ success: false, message: 'Invalid email format' });
+//   }
 
   const otp = crypto.randomInt(100000, 999999).toString();
 
-  otpStore[email] = {
-    otp,
-    expiresAt: Date.now() + 10 * 60 * 1000,
-    name,
-  };
-console.log(otpStore, "otpStore")
+//   otpStore[email] = {
+//     otp,
+//     expiresAt: Date.now() + 10 * 60 * 1000,
+//     name,
+//   };
+// console.log(otpStore, "otpStore")
   try {
-    await transporter.sendMail({
-      from: 'your-email@gmail.com',
-      to: email,
-      subject: 'Your OTP Code',
-      text: `Hello ${name},\n\nYour OTP code is: ${otp}\n\nIt will expire in 10 minutes.`,
+    const message = await client.messages.create({
+      body: `Your OTP is ${otp}`,
+      from: twilioPhone,
+      to: `+91${number}` // For Indian numbers; use full international format
     });
 
-    res.json({ success: true, message: 'OTP sent successfully to email' });
+    res.json({ success: true, message: 'OTP sent successfully to email', msg: message.sid });
   } catch (error) {
     console.error('Error sending email:', error);
     res.status(500).json({ success: false, message: 'Failed to send OTP email' });
@@ -88,37 +95,29 @@ exports.verifyOtp = (req, res) => {
 
 exports.register = async (req, res) => {
   try {
-    const { name, email, phone, bankDetails } = req.body;
+    const { details } = req.body;
 
     // Check all required fields
-    if (!name || !email || !phone || !bankDetails) {
+    if (!details) {
       return res.status(400).json({ success: false, message: "Name, Email, Phone, and Bank Details are required" });
     }
 
     // Validate phone number
-    if (!validatePhoneNumber(phone)) {
-      return res.status(400).json({ success: false, message: "Invalid phone number format" });
-    }
-
-    const { accountHolderName, bankName, accountNumber, ifscCode } = bankDetails;
-
     // Check required bank fields
-    if (!accountHolderName || !bankName || !accountNumber || !ifscCode) {
-      return res.status(400).json({ success: false, message: "Incomplete bank details" });
-    }
 
     // Create user
     const user = await User.create({
-      name,
-      email,
-      phone,
+      userId: details.userId,
+      phone: details.phoneNumber,
       bankDetails: {
-        accountHolderName,
-        bankName,
-        accountNumber,
-        ifscCode
-      }
+        accountNumber: details.accountNumber,
+        ifscCode: details.ifsc, // <- corrected key
+        accountHolderName: details.accountHolderName,
+      },
+      password: details.password,
+      referralCode: details.referralId, // <- corrected key
     });
+    
 
     res.status(201).json({ success: true, message: "Registration successful", user });
 
@@ -132,15 +131,15 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
     
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ phone: email, password });
     if (!user) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
     
-    const isMatch = await user.matchPassword(password);
-    if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
-    }
+    // const isMatch = await user.matchPassword(password);
+    // if (!isMatch) {
+    //   return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    // }
     
     const token = jwt.sign({ id: user._id }, config.jwtSecret, {
       expiresIn: config.jwtExpiresIn
