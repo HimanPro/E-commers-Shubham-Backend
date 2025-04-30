@@ -9,13 +9,13 @@ const bankDetailsSchema = new mongoose.Schema({
 });
 
 const userSchema = new mongoose.Schema({
-  userId: { type: String}, 
+  userId: { type: String, unique: true , immutable: true}, 
   // name: { type: String, required: true },
   // email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  phone: { type: String, required: true},
+  phone: { type: String, required: true, unique: true },
 
-  referralCode: { type: String},
+  referralCode: { type: String,  immutable: true},
   // referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 
   walletBalance: { type: Number, default: 0 },
@@ -24,13 +24,10 @@ const userSchema = new mongoose.Schema({
 
   bankDetails: { type: bankDetailsSchema, required: true },
 
-  // address: {
-  //   street: { type: String },
-  //   city: { type: String },
-  //   state: { type: String },
-  //   zipCode: { type: String },
-  //   country: { type: String }
-  // },
+  address: {
+    type: String,
+    required: true,
+  },
 
   createdAt: { type: Date, default: Date.now }
 });

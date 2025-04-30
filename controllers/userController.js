@@ -1,30 +1,47 @@
 const User = require('../models/User');
 
 exports.getUserProfile = async (req, res) => {
+  const { userId } = req.query;
+  if (!userId) {
+    return res.status(400).json({ success: false, message: 'User ID is required' });
+  }
   try {
-    const user = await User.findById(req.user._id).select('-password');
+    const user = await User.findOne({userId});
     res.status(200).json({ success: true, user });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, phone, address } = req.body;
+    const { userId } = req.query;
+    const updateData = { ...req.body };
+
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'User ID is required' });
+    }
     
-    const user = await User.findByIdAndUpdate(req.user._id, {
-      name,
-      phone,
-      address
-    }, { new: true }).select('-password');
-    
+    delete updateData.UserId;
+    delete updateData.referralCode;
+
+    // Find and update user
+    const user = await User.findOneAndUpdate(
+      { userId },       
+      updateData,         
+      { new: true }     
+    ); 
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
     res.status(200).json({ success: true, user });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
 exports.requestWithdrawal = async (req, res) => {
   try {
     const { amount, upiId } = req.body;

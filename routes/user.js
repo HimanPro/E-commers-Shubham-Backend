@@ -6,10 +6,11 @@ const {
   updateProfile,
   requestWithdrawal
 } = require('../controllers/userController');
+const User = require('../models/User');
 
 router.use(protect);
 
-router.get('/me', getUserProfile);
+router.get('/profile', getUserProfile);
 router.put('/me', updateProfile);
 router.post('/withdraw', requestWithdrawal);
 
