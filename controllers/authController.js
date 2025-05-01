@@ -9,7 +9,6 @@ const { processReferral } = require("../services/referralService");
 const twilio = require("twilio");
 const Referral = require("../models/Referral");
 
-// Replace with your real credentials
 const accountSid = "ACfe483e3f616b089070f53d88efe3d5f8";
 const authToken = "10343bdc8985a7a2d9fb066ca25f507b";
 const twilioPhone = "+14433396743";
@@ -132,7 +131,6 @@ exports.register = async (req, res) => {
       });
     }
 
-    // Generate unique userId (3 letters + 4 digits)
     const generateUserId = () => {
       const letters = [...Array(3)]
         .map(() => String.fromCharCode(97 + Math.floor(Math.random() * 26)))
@@ -145,7 +143,6 @@ exports.register = async (req, res) => {
 
     let walletBonus = 0;
 
-    // Check referral code validity
     let referrer = null;
     if (details.referralId) {
       referrer = await User.findOne({ userId: details.referralId });
@@ -157,10 +154,9 @@ exports.register = async (req, res) => {
         });
       }
 
-      walletBonus = 50; // joining user gets ₹50 in wallet
+      walletBonus = 50; 
     }
 
-    // Create user
     const user = await User.create({
       userId,
       name: details.name,
@@ -172,18 +168,16 @@ exports.register = async (req, res) => {
       },
       password: details.password,
       referralCode: details.referralId || null,
-      walletBalance: walletBonus, // ₹50 if came via referral
-      referralBonus: 0, // this user didn't refer anyone yet
+      walletBalance: walletBonus, 
+      referralBonus: 0, 
       address: details.address,
     });
 
-    // If user joined via referral
     if (referrer) {
       referrer.walletBalance += 100;
       referrer.referralBonus += 100;
       await referrer.save();
 
-      // Save referral record
       await Referral.create({
         referrer: referrer.userId,
         referee: user.userId,
@@ -232,7 +226,6 @@ exports.login = async (req, res) => {
         .json({ success: false, message: "Invalid Password" });
     }
 
-    // Generate JWT
     const token = jwt.sign({ id: user._id }, config.jwtSecret, {
       expiresIn: config.jwtExpiresIn,
     });
