@@ -3,27 +3,22 @@ const bcrypt = require('bcryptjs');
 
 const bankDetailsSchema = new mongoose.Schema({
   accountHolderName: { type: String, required: true },
-  // bankName: { type: String, required: true },
   accountNumber: { type: String, required: true },
   ifscCode: { type: String, required: true }
 });
 
 const userSchema = new mongoose.Schema({
   userId: { type: String, unique: true , immutable: true}, 
-  // name: { type: String, required: true },
-  // email: { type: String, required: true, unique: true },
+  name: { type: String, required: true },
   password: { type: String, required: true },
   phone: { type: String, required: true, unique: true },
-
   referralCode: { type: String,  immutable: true},
-  // referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-
   walletBalance: { type: Number, default: 0 },
   totalEarned: { type: Number, default: 0 },
   totalWithdrawn: { type: Number, default: 0 },
-
+  referralBonus: { type: Number, default: 0 },
   bankDetails: { type: bankDetailsSchema, required: true },
-
+  pendingWithdrawal: { type: Number, default: 0 },
   address: {
     type: String,
     required: true,
@@ -63,5 +58,6 @@ const userSchema = new mongoose.Schema({
 // userSchema.methods.matchPassword = async function(enteredPassword) {
 //   return await bcrypt.compare(enteredPassword, this.password);
 // };
+userSchema.index({ userId: 1, referralCode: 1 , phone: 1});
 
 module.exports = mongoose.model('User', userSchema);

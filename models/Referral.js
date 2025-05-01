@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 
 const referralSchema = new mongoose.Schema({
-  referrer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  referee: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  referrer: { type: String, required: true }, 
+  referee: { type: String, required: true },  
   bonusAmount: { type: Number, required: true },
-  status: { type: String, enum: ['pending', 'credited'], default: 'pending' },
+  status: { type: String, enum: ['pending', 'credited'], default: 'credited' },
   creditedAt: Date,
   createdAt: { type: Date, default: Date.now }
 });

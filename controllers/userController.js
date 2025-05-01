@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Withdrawal = require('../models/Withdrawal');
 
 exports.getUserProfile = async (req, res) => {
   const { userId } = req.query;
@@ -25,7 +26,6 @@ exports.updateProfile = async (req, res) => {
     delete updateData.UserId;
     delete updateData.referralCode;
 
-    // Find and update user
     const user = await User.findOneAndUpdate(
       { userId },       
       updateData,         
@@ -44,34 +44,51 @@ exports.updateProfile = async (req, res) => {
 };
 exports.requestWithdrawal = async (req, res) => {
   try {
-    const { amount, upiId } = req.body;
-    const user = await User.findById(req.user._id);
-    
-    if (amount < config.minWithdrawalAmount) {
-      return res.status(400).json({ 
-        success: false, 
-        message: `Minimum withdrawal amount is ₹${config.minWithdrawalAmount}` 
+    const { amount, userId } = req.body;
+    const user = await User.findOne({userId});
+
+    // Check minimum wallet balance requirement
+    if (user.walletBalance < 110) {
+      return res.status(400).json({
+        success: false,
+        message: "You must have at least ₹110 in wallet to withdraw."
       });
     }
-    
+
+    // Check requested amount vs wallet balance
     if (amount > user.walletBalance) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Insufficient balance' 
+      return res.status(400).json({
+        success: false,
+        message: "Insufficient wallet balance."
       });
     }
-    
+
+    // Deduct from wallet and move to pendingWithdrawal
     user.walletBalance -= amount;
-    user.totalWithdrawn += amount;
+    user.pendingWithdrawal += amount;
     await user.save();
-    
-    // In real app, you would create a withdrawal record and process it
-    
-    res.status(200).json({ 
-      success: true, 
-      message: 'Withdrawal request submitted successfully' 
+
+    // Create withdrawal request (pending)
+    const withdrawal = await Withdrawal.create({
+      userId: user.userId,
+      name: user.name,
+      amount,
+      bankDetails: {
+        accountNumber: user.bankDetails.accountNumber,
+        ifscCode: user.bankDetails.ifscCode,
+        accountHolderName: user.bankDetails.accountHolderName
+      },
+      status: "pending"
     });
+
+    return res.status(200).json({
+      success: true,
+      message: "Withdrawal request submitted successfully.",
+      withdrawal
+    });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error("Withdrawal request error:", error);
+    return res.status(500).json({ success: false, message: error.message });
   }
 };

@@ -7,6 +7,7 @@ const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const { processReferral } = require("../services/referralService");
 const twilio = require("twilio");
+const Referral = require("../models/Referral");
 
 // Replace with your real credentials
 const accountSid = "ACfe483e3f616b089070f53d88efe3d5f8";
@@ -108,42 +109,84 @@ exports.verifyOtp = (req, res) => {
     user: { name: record.name, email },
   });
 };
+function generateUserId() {
+  const letters = Array.from({ length: 3 }, () =>
+    String.fromCharCode(97 + Math.floor(Math.random() * 26))
+  ).join("");
+
+  const numbers = Array.from({ length: 4 }, () =>
+    Math.floor(Math.random() * 10)
+  ).join("");
+
+  return letters + numbers;
+}
 
 exports.register = async (req, res) => {
   try {
     const { details } = req.body;
 
-    // Check all required fields
     if (!details) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Name, Email, Phone, and Bank Details are required",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Name, Email, Phone, and Bank Details are required",
+      });
     }
 
-    // Validate phone number
-    // Check required bank fields
+    // Generate unique userId (3 letters + 4 digits)
+    const generateUserId = () => {
+      const letters = [...Array(3)]
+        .map(() => String.fromCharCode(97 + Math.floor(Math.random() * 26)))
+        .join("");
+      const numbers = Math.floor(1000 + Math.random() * 9000);
+      return `${letters}${numbers}`;
+    };
 
-    // Create user
+    const userId = generateUserId();
+
+    // Create new user
     const user = await User.create({
-      userId: details.userId,
+      userId,
+      name: details.name,
       phone: details.phoneNumber,
       bankDetails: {
         accountNumber: details.accountNumber,
-        ifscCode: details.ifsc, // <- corrected key
+        ifscCode: details.ifsc,
         accountHolderName: details.accountHolderName,
       },
       password: details.password,
-      referralCode: details.referralId, // <- corrected key
+      referralCode: details.referralId || null,
+      referralBonus: details.referralId ? 50 : 0,
       address: details.address,
     });
 
-    res
-      .status(201)
-      .json({ success: true, message: "Registration successful", user });
+    // If user joined via referral
+    if (details.referralId) {
+      const referrer = await User.findOne({ userId: details.referralId });
+
+      if (referrer) {
+        // Add 100 to referrer's wallet
+        referrer.walletBalance += 100;
+        referrer.referralBonus += 100;
+        await referrer.save();
+
+        // Save referral record
+        await Referral.create({
+          referrer: referrer.userId, // saving string userId
+          referee: user.userId,
+          bonusAmount: 100,
+          status: "credited",
+          creditedAt: new Date(),
+        });
+      }
+    }
+
+    res.status(201).json({
+      success: true,
+      message: "Registration successful",
+      user,
+    });
   } catch (error) {
+    console.error("Registration error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -158,7 +201,9 @@ exports.login = async (req, res) => {
     console.log(user, "user");
 
     if (!user) {
-      return res.status(401).json({ success: false, message: "User Not Found" });
+      return res
+        .status(401)
+        .json({ success: false, message: "User Not Found" });
     }
 
     // If you have hashed passwords, compare here:
@@ -169,7 +214,9 @@ exports.login = async (req, res) => {
 
     // TEMPORARY plain password check (not secure for production!)
     if (user.password !== password) {
-      return res.status(401).json({ success: false, message: "Invalid Password" });
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid Password" });
     }
 
     // Generate JWT
