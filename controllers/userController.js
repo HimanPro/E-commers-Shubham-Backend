@@ -1,13 +1,16 @@
-const User = require('../models/User');
-const Withdrawal = require('../models/Withdrawal');
+const Referral = require("../models/Referral");
+const User = require("../models/User");
+const Withdrawal = require("../models/Withdrawal");
 
 exports.getUserProfile = async (req, res) => {
   const { userId } = req.query;
   if (!userId) {
-    return res.status(400).json({ success: false, message: 'User ID is required' });
+    return res
+      .status(400)
+      .json({ success: false, message: "User ID is required" });
   }
   try {
-    const user = await User.findOne({userId});
+    const user = await User.findOne({ userId });
     res.status(200).json({ success: true, user });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -20,20 +23,22 @@ exports.updateProfile = async (req, res) => {
     const updateData = { ...req.body };
 
     if (!userId) {
-      return res.status(400).json({ success: false, message: 'User ID is required' });
+      return res
+        .status(400)
+        .json({ success: false, message: "User ID is required" });
     }
-    
+
     delete updateData.UserId;
     delete updateData.referralCode;
 
-    const user = await User.findOneAndUpdate(
-      { userId },       
-      updateData,         
-      { new: true }     
-    ); 
+    const user = await User.findOneAndUpdate({ userId }, updateData, {
+      new: true,
+    });
 
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     res.status(200).json({ success: true, user });
@@ -45,13 +50,13 @@ exports.updateProfile = async (req, res) => {
 exports.requestWithdrawal = async (req, res) => {
   try {
     const { amount, userId } = req.body;
-    const user = await User.findOne({userId});
+    const user = await User.findOne({ userId });
 
     // Check minimum wallet balance requirement
     if (user.walletBalance < 110) {
       return res.status(400).json({
         success: false,
-        message: "You must have at least ₹110 in wallet to withdraw."
+        message: "You must have at least ₹110 in wallet to withdraw.",
       });
     }
 
@@ -59,7 +64,7 @@ exports.requestWithdrawal = async (req, res) => {
     if (amount > user.walletBalance) {
       return res.status(400).json({
         success: false,
-        message: "Insufficient wallet balance."
+        message: "Insufficient wallet balance.",
       });
     }
 
@@ -76,19 +81,74 @@ exports.requestWithdrawal = async (req, res) => {
       bankDetails: {
         accountNumber: user.bankDetails.accountNumber,
         ifscCode: user.bankDetails.ifscCode,
-        accountHolderName: user.bankDetails.accountHolderName
+        accountHolderName: user.bankDetails.accountHolderName,
       },
-      status: "pending"
+      status: "pending",
     });
 
     return res.status(200).json({
       success: true,
       message: "Withdrawal request submitted successfully.",
-      withdrawal
+      withdrawal,
     });
-
   } catch (error) {
     console.error("Withdrawal request error:", error);
     return res.status(500).json({ success: false, message: error.message });
+  }
+};
+exports.withdrawalReport = async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required",
+      });
+    }
+
+    const withdrawals = await Withdrawal.find({ userId }).sort({
+      createdAt: -1,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Withdrawal report fetched successfully",
+      data: withdrawals,
+    });
+  } catch (error) {
+    console.error("Withdrawal report error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+exports.referralReport = async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required",
+      });
+    }
+
+    const referrals = await Referral.find({
+      referrer: userId,
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      message: "Referral report fetched successfully",
+      data: referrals,
+    });
+  } catch (error) {
+    console.error("Referral report error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
 };
