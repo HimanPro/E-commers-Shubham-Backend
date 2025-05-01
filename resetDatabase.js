@@ -4,7 +4,7 @@ dotenv.config({ path: './.env' });
 const mongoose = require('mongoose');
 
 async function resetDatabase() {
-  try {
+  try {  
     const uri = process.env.MONGODB_URI;
 
     if (!uri) {
