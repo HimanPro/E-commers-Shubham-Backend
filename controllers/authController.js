@@ -128,7 +128,7 @@ exports.register = async (req, res) => {
     if (!details) {
       return res.status(400).json({
         success: false,
-        message: "Name, Email, Phone, and Bank Details are required",
+        message: "Name, Phone, and Bank Details are required",
       });
     }
 
@@ -143,7 +143,24 @@ exports.register = async (req, res) => {
 
     const userId = generateUserId();
 
-    // Create new user
+    let walletBonus = 0;
+
+    // Check referral code validity
+    let referrer = null;
+    if (details.referralId) {
+      referrer = await User.findOne({ userId: details.referralId });
+
+      if (!referrer) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid referral code",
+        });
+      }
+
+      walletBonus = 50; // joining user gets ₹50 in wallet
+    }
+
+    // Create user
     const user = await User.create({
       userId,
       name: details.name,
@@ -155,29 +172,25 @@ exports.register = async (req, res) => {
       },
       password: details.password,
       referralCode: details.referralId || null,
-      referralBonus: details.referralId ? 50 : 0,
+      walletBalance: walletBonus, // ₹50 if came via referral
+      referralBonus: 0, // this user didn't refer anyone yet
       address: details.address,
     });
 
     // If user joined via referral
-    if (details.referralId) {
-      const referrer = await User.findOne({ userId: details.referralId });
+    if (referrer) {
+      referrer.walletBalance += 100;
+      referrer.referralBonus += 100;
+      await referrer.save();
 
-      if (referrer) {
-        // Add 100 to referrer's wallet
-        referrer.walletBalance += 100;
-        referrer.referralBonus += 100;
-        await referrer.save();
-
-        // Save referral record
-        await Referral.create({
-          referrer: referrer.userId, // saving string userId
-          referee: user.userId,
-          bonusAmount: 100,
-          status: "credited",
-          creditedAt: new Date(),
-        });
-      }
+      // Save referral record
+      await Referral.create({
+        referrer: referrer.userId,
+        referee: user.userId,
+        bonusAmount: 100,
+        status: "credited",
+        creditedAt: new Date(),
+      });
     }
 
     res.status(201).json({

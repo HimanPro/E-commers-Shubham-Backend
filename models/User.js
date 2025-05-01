@@ -58,6 +58,6 @@ const userSchema = new mongoose.Schema({
 // userSchema.methods.matchPassword = async function(enteredPassword) {
 //   return await bcrypt.compare(enteredPassword, this.password);
 // };
-userSchema.index({ userId: 1, referralCode: 1 , phone: 1});
+userSchema.index({ phone: 1});
 
 module.exports = mongoose.model('User', userSchema);
