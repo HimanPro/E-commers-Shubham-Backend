@@ -14,8 +14,8 @@ router.use(protect);
 router.get('/profile', getUserProfile);
 router.put('/me', updateProfile);
 router.post('/withdraw', requestWithdrawal);
-router.post('/withdrawReport', withdrawalReport);
-router.post('/referralReport', referralReport);
+router.get('/withdrawReport', withdrawalReport);
+router.get('/referralReport', referralReport);
 
 
 

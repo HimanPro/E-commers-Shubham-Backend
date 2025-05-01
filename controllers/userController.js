@@ -98,7 +98,7 @@ exports.requestWithdrawal = async (req, res) => {
 };
 exports.withdrawalReport = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { userId } = req.query;
 
     if (!userId) {
       return res.status(400).json({
@@ -126,7 +126,7 @@ exports.withdrawalReport = async (req, res) => {
 };
 exports.referralReport = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { userId } = req.query;
 
     if (!userId) {
       return res.status(400).json({
