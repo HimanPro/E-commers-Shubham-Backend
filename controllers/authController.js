@@ -127,7 +127,7 @@ exports.register = async (req, res) => {
     if (!details) {
       return res.status(400).json({
         success: false,
-        message: "Name, Phone, and Bank Details are required",
+        message: "Name, Phone"
       });
     }
 
@@ -161,16 +161,10 @@ exports.register = async (req, res) => {
       userId,
       name: details.name,
       phone: details.phoneNumber,
-      bankDetails: {
-        accountNumber: details.accountNumber,
-        ifscCode: details.ifsc,
-        accountHolderName: details.accountHolderName,
-      },
       password: details.password,
       referralCode: details.referralId || null,
       walletBalance: walletBonus, 
-      referralBonus: 0, 
-      address: details.address,
+      referralBonus: 0,
     });
 
     if (referrer) {

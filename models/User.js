@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const bankDetailsSchema = new mongoose.Schema({
-  accountHolderName: { type: String, required: true },
-  accountNumber: { type: String, required: true },
-  ifscCode: { type: String, required: true }
+  accountHolderName: { type: String, },
+  accountNumber: { type: String,  },
+  ifscCode: { type: String, }
 });
 
 const userSchema = new mongoose.Schema({
@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
   pendingWithdrawal: { type: Number, default: 0 },
   address: {
     type: String,
-    required: true,
+   
   },
 
   createdAt: { type: Date, default: Date.now }
