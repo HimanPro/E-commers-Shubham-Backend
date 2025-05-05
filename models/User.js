@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
   totalEarned: { type: Number, default: 0 },
   totalWithdrawn: { type: Number, default: 0 },
   referralBonus: { type: Number, default: 0 },
-  bankDetails: { type: bankDetailsSchema, required: true },
+  bankDetails: { type: bankDetailsSchema,},
   pendingWithdrawal: { type: Number, default: 0 },
   address: {
     type: String,
