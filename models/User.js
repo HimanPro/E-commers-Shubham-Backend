@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const bankDetailsSchema = new mongoose.Schema({
-  accountHolderName: { type: String, },
+  accountHolderName: { type: String},
   accountNumber: { type: String,  },
   ifscCode: { type: String, }
 });
