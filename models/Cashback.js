@@ -9,5 +9,4 @@ const cashbackSchema = new mongoose.Schema({
   status: { type: String, enum: ['pending', 'credited'], default: 'credited' },
   creditedAt: { type: Date, default: Date.now }
 });
-
 module.exports = mongoose.model('Cashback', cashbackSchema);
