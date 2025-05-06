@@ -5,7 +5,7 @@ const { createOrder, getUserOrders } = require('../controllers/orderController')
 
 router.use(protect);
 
-router.post('/', createOrder);
-router.get('/', getUserOrders);
+router.post('/dispatch-order', createOrder);
+// router.get('/', getUserOrders);
 
 module.exports = router;

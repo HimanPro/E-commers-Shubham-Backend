@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const withdrawalSchema = new mongoose.Schema({
-  userId: { type: String, required: true }, // store userId (not ObjectId)
+  userId: { type: String, required: true }, 
   name: { type: String, required: true },
   amount: { type: Number, required: true },
   bankDetails: {

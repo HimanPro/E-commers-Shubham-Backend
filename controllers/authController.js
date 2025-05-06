@@ -220,7 +220,7 @@ exports.login = async (req, res) => {
         .json({ success: false, message: "Invalid Password" });
     }
 
-    const token = jwt.sign({ id: user._id }, config.jwtSecret, {
+    const token = jwt.sign({ id: user.userId }, config.jwtSecret, {
       expiresIn: config.jwtExpiresIn,
     });
 

@@ -9,6 +9,7 @@ const auth = require('./routes/auth');
 const user = require('./routes/user');
 const order = require('./routes/order');
 const payment = require('./routes/payment');
+// const payment = require('./controllers/payment');
 
 const app = express();
 
