@@ -1,42 +1,40 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
 const bankDetailsSchema = new mongoose.Schema({
-  accountHolderName: { type: String},
-  accountNumber: { type: String,  },
-  ifscCode: { type: String, }
+  accountHolderName: { type: String },
+  accountNumber: { type: String },
+  ifscCode: { type: String },
 });
 
 const userSchema = new mongoose.Schema({
-  userId: { type: String, unique: true , immutable: true}, 
+  userId: { type: String, unique: true, immutable: true },
   name: { type: String, required: true },
   password: { type: String, required: true },
   phone: { type: String, required: true, unique: true },
-  referralCode: { type: String,  immutable: true},
+  referralCode: { type: String, immutable: true },
   walletBalance: { type: Number, default: 0 },
   totalEarned: { type: Number, default: 0 },
   totalWithdrawn: { type: Number, default: 0 },
   referralBonus: { type: Number, default: 0 },
-  bankDetails: { type: bankDetailsSchema,},
-  pendingWithdrawal: { type: Number, default: 0 },
+  bankDetails: { type: bankDetailsSchema },
   address: {
     type: String,
-   
   },
-  pkg500: { type: Boolean, default:false},
-  pkg1000: { type: Boolean, default:false},
-  pkg2000: { type: Boolean, default:false},
-  pkg5000: { type: Boolean, default:false},
-  pkg8000: { type: Boolean, default:false},
-  pkg12000: { type: Boolean, default:false},
-  pkg30000: { type: Boolean, default:false},
-  pkg50000: { type: Boolean, default:false},
-  pkg70000: { type: Boolean, default:false},
-  pkg100000: { type: Boolean, default:false},
-  pkg200000: { type: Boolean, default:false},
-  pkg300000: { type: Boolean, default:false},
-  pkg400000: { type: Boolean, default:false},
-  createdAt: { type: Date, default: Date.now }
+  pkg500: { type: Boolean, default: false },
+  pkg1000: { type: Boolean, default: false },
+  pkg2000: { type: Boolean, default: false },
+  pkg5000: { type: Boolean, default: false },
+  pkg8000: { type: Boolean, default: false },
+  pkg12000: { type: Boolean, default: false },
+  pkg30000: { type: Boolean, default: false },
+  pkg50000: { type: Boolean, default: false },
+  pkg70000: { type: Boolean, default: false },
+  pkg100000: { type: Boolean, default: false },
+  pkg200000: { type: Boolean, default: false },
+  pkg300000: { type: Boolean, default: false },
+  pkg400000: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now },
 });
 
 // // Hash password
@@ -70,6 +68,6 @@ const userSchema = new mongoose.Schema({
 // userSchema.methods.matchPassword = async function(enteredPassword) {
 //   return await bcrypt.compare(enteredPassword, this.password);
 // };
-userSchema.index({ phone: 1});
+userSchema.index({ phone: 1 });
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model("User", userSchema);

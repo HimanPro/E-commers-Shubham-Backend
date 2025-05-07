@@ -52,7 +52,6 @@ exports.requestWithdrawal = async (req, res) => {
     const { amount, userId } = req.body;
     const user = await User.findOne({ userId });
 
-    // Check minimum wallet balance requirement
     if (user.walletBalance < 110) {
       return res.status(400).json({
         success: false,
@@ -60,7 +59,6 @@ exports.requestWithdrawal = async (req, res) => {
       });
     }
 
-    // Check requested amount vs wallet balance
     if (amount > user.walletBalance) {
       return res.status(400).json({
         success: false,
@@ -70,7 +68,6 @@ exports.requestWithdrawal = async (req, res) => {
 
     // Deduct from wallet and move to pendingWithdrawal
     user.walletBalance -= amount;
-    user.pendingWithdrawal += amount;
     await user.save();
 
     // Create withdrawal request (pending)

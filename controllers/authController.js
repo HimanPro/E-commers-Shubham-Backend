@@ -108,17 +108,7 @@ exports.verifyOtp = (req, res) => {
     user: { name: record.name, email },
   });
 };
-function generateUserId() {
-  const letters = Array.from({ length: 3 }, () =>
-    String.fromCharCode(97 + Math.floor(Math.random() * 26))
-  ).join("");
 
-  const numbers = Array.from({ length: 4 }, () =>
-    Math.floor(Math.random() * 10)
-  ).join("");
-
-  return letters + numbers;
-}
 
 exports.register = async (req, res) => {
   try {
@@ -197,7 +187,6 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
     console.log(req.body, "req.body");
 
-    // Find user by phone (used as 'email' in your logic)
     const user = await User.findOne({ phone: email });
     console.log(user, "user");
 
@@ -213,7 +202,6 @@ exports.login = async (req, res) => {
     //   return res.status(401).json({ success: false, message: "Invalid credentials" });
     // }
 
-    // TEMPORARY plain password check (not secure for production!)
     if (user.password !== password) {
       return res
         .status(401)
