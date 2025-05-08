@@ -8,7 +8,6 @@ const instance = new Razorpay({
 });
 
 exports.createRazorpayOrder = async (amount) => {
-  console.log(amount);
   const options = {
     amount: Math.round(parseFloat(amount) * 100),
     currency: "INR",
@@ -24,14 +23,11 @@ exports.verifyPayment = (
   razorpay_signature
 ) => {
    const sign = razorpay_payment_id + "|" + razorpay_order_id;
-   console.log(sign, "sign")
     const expectedSignature = crypto
       .createHmac("sha256", config.razorpayKeySecret)
       .update(sign.toString())
       .digest("hex");
 
-  console.log(expectedSignature, "expectedSignature");
-  console.log(razorpay_signature, "razorpaySignature");
 
   return expectedSignature === razorpay_signature;
 };

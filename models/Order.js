@@ -1,14 +1,13 @@
 const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
-  user: { type: String, required: true }, // user ID or email
+  user: { type: String, required: true }, 
   totalAmount: { type: Number, required: true },
   paymentStatus: { type: Boolean, default: true },
-  paymentId: { type: String, required: true },
-  packageId: { type: String, required: true },
-  
-  // Contact & Shipping Details
-  customerName: { type: String, required: true },
+  razorpay_payment_id: { type: String, required: true },
+  pkgId: { type: String, required: true },
+
+  name: { type: String, required: true },
   phone: { type: String, required: true },
   email: { type: String, required: true },
   address: {
