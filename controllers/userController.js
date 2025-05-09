@@ -105,7 +105,7 @@ exports.withdrawalReport = async (req, res) => {
     }
 
     const withdrawals = await Withdrawal.find({ userId }).sort({
-      createdAt: -1,
+      requestedAt: -1,
     });
 
     res.status(200).json({
