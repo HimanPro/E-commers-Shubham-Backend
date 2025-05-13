@@ -15,7 +15,6 @@ exports.createOrder = async (req, res) => {
       !pkgId ||
       !name ||
       !phone ||
-      !email ||
       !address
     ) {
       return res
@@ -38,7 +37,6 @@ exports.createOrder = async (req, res) => {
       pkgId,
       name,
       phone,
-      email,
       address: {
         line1,
         line2,
