@@ -112,7 +112,7 @@ cron.schedule('0 2 * * *', async () => {
   try {
     const data = await User.find();
     for(let i=0; i < data.length; i++){
-      console.log(data[i])
+      // console.log(data[i])
       await getIncome(data[i].userId)
     }
     console.log("getIncome completed successfully.");
