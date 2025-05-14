@@ -7,6 +7,19 @@ const orderSchema = new mongoose.Schema({
   razorpay_payment_id: { type: String, required: true },
   pkgId: { type: String, required: true },
   onlyBuy: { type: Boolean, required: true },
+  rewardStatus: {
+    type: Boolean,
+    default: false
+  },
+  rewardDaysCompleted: {
+    type: Number,
+    default: 0
+  },
+  lastRewardDate: {
+    type: Date,
+    default: null
+  },
+  
 
   name: { type: String, required: true },
   phone: { type: String, required: true },

@@ -39,70 +39,61 @@ app.use('/api/users', user);
 app.use('/api/orders', order);
 app.use('/api/payments', payment);
 
+const pkgRewards = {
+  pkg500: { reward: 15, days: 50 },
+  pkg1000: { reward: 30, days: 50 },
+  pkg2000: { reward: 60, days: 50 },
+  pkg5000: { reward: 150, days: 50 },
+  pkg8000: { reward: 240, days: 50 },
+  pkg12000: { reward: 360, days: 50 },
+  pkg30000: { reward: 750, days: 60 },
+  pkg50000: { reward: 1250, days: 60 },
+  pkg75000: { reward: 1600, days: 60 },
+  pkg100000: { reward: 2000, days: 80 },
+  pkg200000: { reward: 4000, days: 80 },
+  pkg300000: { reward: 6000, days: 80 },
+  pkg400000: { reward: 8000, days: 80 }
+};
+
 const getIncome = async (userId) => {
   const orderData = await Order.find({ user: userId }).sort({ createdAt: -1 });
-  if(!orderData){
-    return;
-  }
+  if (!orderData) return;
+
+  const userData = await User.findOne({ userId });
+  if (!userData) return;
 
   for (let i = 0; i < orderData.length; i++) {
-    if (orderData[i].onlyBuy === true) {
+    const order = orderData[i];
+
+    if (order.onlyBuy === true) continue;
+    if (order.rewardStatus === true) continue; // Skip if reward already completed
+
+    const pkg = pkgRewards[order.pkgId];
+    if (!pkg) continue;
+
+    // Check if today's reward is already given
+    const today = new Date().toDateString();
+    const lastRewardDate = order.lastRewardDate ? new Date(order.lastRewardDate).toDateString() : null;
+
+    if (today === lastRewardDate) continue; // Already rewarded today
+
+    if (order.rewardDaysCompleted >= pkg.days) {
+      order.rewardStatus = true; // Reward period over
+      await order.save();
       continue;
     }
 
-    let rewardAmt = 0;
+    // Credit reward
+    userData.walletBalance = (userData.walletBalance || 0) + pkg.reward;
+    await userData.save();
 
-    switch (orderData[i].pkgId) {
-      case "pkg500":
-        rewardAmt = 15;
-        break;
-      case "pkg1000":
-        rewardAmt = 30;
-        break;
-      case "pkg2000":
-        rewardAmt = 60;
-        break;
-      case "pkg5000":
-        rewardAmt = 150;
-        break;
-      case "pkg8000":
-        rewardAmt = 240;
-        break;
-      case "pkg12000":
-        rewardAmt = 360;
-        break;
-      case "pkg30000":
-        rewardAmt = 750;
-        break;
-      case "pkg50000":
-        rewardAmt = 1250;
-        break;
-      case "pkg75000":
-        rewardAmt = 1600;
-        break;
-      case "pkg100000":
-        rewardAmt = 2000;
-        break;
-      case "pkg200000":
-        rewardAmt = 4000;
-        break;
-      case "pkg300000":
-        rewardAmt = 6000;
-        break;
-      case "pkg400000":
-        rewardAmt = 8000;
-        break;
-      default:
-        rewardAmt = 0;
+    // Update order
+    order.rewardDaysCompleted += 1;
+    order.lastRewardDate = new Date();
+    if (order.rewardDaysCompleted >= pkg.days) {
+      order.rewardStatus = true;
     }
-
-    if (rewardAmt > 0) {
-      const userData = await User.findOne({ userId });
-      if (userData) {
-        userData.walletBalance = (userData.walletBalance || 0) + rewardAmt;
-        await userData.save();
-      }
-    }
+    await order.save();
   }
 };
 
