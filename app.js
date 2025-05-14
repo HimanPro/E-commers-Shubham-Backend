@@ -99,14 +99,14 @@ const getIncome = async (userId) => {
 
 
 cron.schedule('0 2 * * *', async () => {
-  console.log("Running getIncome for tzc4101 at 2:00 AM...");
+  // console.log("Running getIncome for tzc4101 at 2:00 AM...");
   try {
     const data = await User.find();
     for(let i=0; i < data.length; i++){
       // console.log(data[i])
       await getIncome(data[i].userId)
     }
-    console.log("getIncome completed successfully.");
+    // console.log("getIncome completed successfully.");
   } catch (err) {
     console.error("Error running getIncome:", err.message);
   }
