@@ -8,9 +8,7 @@ const orderSchema = new mongoose.Schema({
   pkgId: { type: String, required: true },
 
   name: { type: String, required: true },
-  phone: { type: String, required: true }, 
-  onlyBuy: { type: Boolean, required: true }, 
-
+  phone: { type: String, required: true },
   address: {
     line1: { type: String, required: true },
     line2: { type: String },

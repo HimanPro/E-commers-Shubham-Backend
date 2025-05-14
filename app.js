@@ -22,9 +22,9 @@ connectDB();
 startCashbackScheduler();
 
 // Middleware
-app.use(cors());
+// app.use(cors());
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://aldsshopp.vercel.app'], 
+  origin: ['http://localhost:5173', 'https://aldgroup.shop','https://www.aldgroup.shop'],
   credentials: true 
 }));
 app.use(express.json());
