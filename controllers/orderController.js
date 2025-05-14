@@ -35,6 +35,7 @@ exports.createOrder = async (req, res) => {
       totalAmount: amount,
       razorpay_payment_id,
       pkgId,
+      onlyBuy,
       name,
       phone,
       address: {

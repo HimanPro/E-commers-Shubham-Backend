@@ -6,6 +6,7 @@ const orderSchema = new mongoose.Schema({
   paymentStatus: { type: Boolean, default: true },
   razorpay_payment_id: { type: String, required: true },
   pkgId: { type: String, required: true },
+  onlyBuy: { type: Boolean, required: true },
 
   name: { type: String, required: true },
   phone: { type: String, required: true },
