@@ -12,6 +12,7 @@ const order = require('./routes/order');
 const payment = require('./routes/payment');
 const Order = require('./models/Order');
 const User = require('./models/User');
+const Cashback = require('./models/Cashback');
 // const payment = require('./controllers/payment');
 
 const app = express();
@@ -93,6 +94,13 @@ const getIncome = async (userId) => {
     if (order.rewardDaysCompleted >= pkg.days) {
       order.rewardStatus = true;
     }
+    await Cashback.create({
+      user: order.user,
+      pkgId:order.pkgId,
+      amount: pkg.reward,
+      day: order.day,
+
+    })
     await order.save();
   }
 };

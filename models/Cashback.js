@@ -2,11 +2,10 @@ const mongoose = require('mongoose');
 
 const cashbackSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  order: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', required: true },
-  product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+  pkgId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', required: true },
   amount: { type: Number, required: true },
   day: { type: Number, required: true },
-  status: { type: String, enum: ['pending', 'credited'], default: 'credited' },
+  status: { type: String, default: 'credited' },
   creditedAt: { type: Date, default: Date.now }
 });
 module.exports = mongoose.model('Cashback', cashbackSchema);
