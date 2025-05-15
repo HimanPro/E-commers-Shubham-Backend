@@ -74,7 +74,7 @@ const getIncome = async (userId) => {
     const today = new Date().toDateString();
     const lastRewardDate = order.lastRewardDate ? new Date(order.lastRewardDate).toDateString() : null;
 
-    if (today === lastRewardDate) continue; // Already rewarded today
+    if (today === lastRewardDate) continue; // Already rewarded today  
 
     if (order.rewardDaysCompleted >= pkg.days) {
       order.rewardStatus = true; // Reward period over
@@ -96,8 +96,8 @@ const getIncome = async (userId) => {
       user: order.user,
       pkgId:order.pkgId,
       amount: pkg.reward,
-      day: order.day,
-
+      day: order.rewardDaysCompleted,
+      remainingDay: pkg.days - order.rewardDaysCompleted,
     })
     await order.save();
   }
