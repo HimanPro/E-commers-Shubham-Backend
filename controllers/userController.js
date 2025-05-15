@@ -20,7 +20,6 @@ exports.getUserProfile = async (req, res) => {
 
     const refAmount = referrer.reduce((acc, curr) => acc + curr.bonusAmount, 0);
 
-    // Add custom properties to user object
     const userWithRefInfo = {
       ...user.toObject(), // Convert Mongoose doc to plain object
       refCount: referrer.length,
