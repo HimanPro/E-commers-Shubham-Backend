@@ -121,12 +121,18 @@ exports.register = async (req, res) => {
     }
 
     const generateUserId = () => {
-      const letters = [...Array(3)]
-        .map(() => String.fromCharCode(97 + Math.floor(Math.random() * 26)))
-        .join("");
-      const numbers = Math.floor(1000 + Math.random() * 9000);
-      return `${letters}${numbers}`;
+      const randomChars = (length, chars) =>
+        Array.from({ length }, () =>
+          chars.charAt(Math.floor(Math.random() * chars.length))
+        ).join("");
+    
+      const letters = randomChars(3, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+      const digits = randomChars(3, "0123456789");
+      const timestamp = Date.now().toString().slice(-3); // last 3 digits of timestamp
+    
+      return `ALD-${letters}${digits}-${timestamp}`;
     };
+    
 
     const userId = generateUserId();
 
