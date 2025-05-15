@@ -1,3 +1,4 @@
+const Cashback = require("../models/Cashback");
 const Referral = require("../models/Referral");
 const User = require("../models/User");
 const Withdrawal = require("../models/Withdrawal");
@@ -17,13 +18,16 @@ exports.getUserProfile = async (req, res) => {
     }
 
     const referrer = await Referral.find({ referrer: userId });
+    const cashback = await Cashback.find({ user: userId });
 
     const refAmount = referrer.reduce((acc, curr) => acc + curr.bonusAmount, 0);
+    const cashBack = Cashback.reduce((acc, curr) => acc + curr.amount, 0);
 
     const userWithRefInfo = {
       ...user.toObject(), // Convert Mongoose doc to plain object
       refCount: referrer.length,
-      refAmount: refAmount
+      refAmount: refAmount,
+      cashBackAmt: cashBack,
     };
 
     res.status(200).json({ success: true, user: userWithRefInfo });
