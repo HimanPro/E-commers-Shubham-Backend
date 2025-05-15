@@ -11,7 +11,13 @@ exports.getUserProfile = async (req, res) => {
   }
   try {
     const user = await User.findOne({ userId });
-    res.status(200).json({ success: true, user });
+    const referrer = await Referral.find({referrer: userId});
+
+    const refAmount = referrer.reduce((acc, curr) => {
+      return acc + curr.bonusAmount;
+    }
+    , 0);
+    res.status(200).json({ success: true, user, refAmount, refCount: referrer.length });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
