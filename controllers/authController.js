@@ -5,7 +5,6 @@ const dotenv = require("dotenv");
 dotenv.config();
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
-const { processReferral } = require("../services/referralService");
 const twilio = require("twilio");
 const Referral = require("../models/Referral");
 

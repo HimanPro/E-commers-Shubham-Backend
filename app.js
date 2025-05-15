@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const connectDB = require('./config/db');
-const startCashbackScheduler = require('./utils/scheduleCashback');
 const cron = require('node-cron');
 
 // Route files
@@ -23,7 +22,6 @@ const app = express();
 connectDB();
 
 // Start cashback scheduler
-startCashbackScheduler();
 
 // Middleware
 // app.use(cors());
@@ -108,14 +106,11 @@ const getIncome = async (userId) => {
 // cron.schedule('*/20 * * * * *', async () => {
 
 cron.schedule('0 2 * * *', async () => {
-  // console.log("Running getIncome for tzc4101 at 2:00 AM...");
   try {
     const data = await User.find();
     for(let i=0; i < data.length; i++){
-      // console.log(data[i])
       await getIncome(data[i].userId)
     }
-    // console.log("getIncome completed successfully.");
   } catch (err) {
     console.error("Error running getIncome:", err.message);
   }

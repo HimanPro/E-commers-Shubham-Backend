@@ -1,6 +1,5 @@
 const Order = require('../models/Order');
 const { createRazorpayOrder, verifyPayment } = require('../services/paymentService');
-const { creditReferralBonuses } = require('../services/referralService');
 
 exports.createPaymentOrder = async (req, res) => {
   try {
@@ -36,8 +35,6 @@ exports.verifyPayment = async (req, res) => {
     //   paymentStatus: 'completed',
     //   paymentId: razorpay_payment_id
     // }, { new: true });
-    
-    // await creditReferralBonuses(orderId);
     
     res.status(200).json({ success: true, message: "Payment Successfull"});
   } catch (error) {
