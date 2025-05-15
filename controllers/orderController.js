@@ -1,3 +1,4 @@
+const Cashback = require("../models/Cashback");
 const Order = require("../models/Order");
 const Product = require("../models/Product");
 const User = require("../models/User");
@@ -74,3 +75,20 @@ exports.getUserOrders = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+exports.getCashback = async (req, res) => {
+  const {userId} = req.query;
+  if(!userId) {
+    return res.status(400).json({ success: false, message: "Missing userId" });
+  }
+  try {
+    const cashback = await Cashback.find({user: userId}).sort({createdAt: -1});
+    if(!cashback) {
+      return res.status(404).json({ success: false, message: "No cashback found" });
+    }
+    res.status(200).json({ success: true, cashback });
+  } catch (error) {
+    console.error("Get Cashback Error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
