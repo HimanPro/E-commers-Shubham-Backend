@@ -9,30 +9,30 @@ exports.getUserProfile = async (req, res) => {
       .status(400)
       .json({ success: false, message: "User ID is required" });
   }
+
   try {
     const user = await User.findOne({ userId });
-    const referrer = await Referral.find({referrer: userId});
-
-    const refAmount = referrer.reduce((acc, curr) => {
-      return acc + curr.bonusAmount;
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
     }
-    , 0);
-    
-    user.refCount = referrer.length;
-    user.refAmount = refAmount;
-    await user.save();
 
-    const Data = {
-      user,
+    const referrer = await Referral.find({ referrer: userId });
+
+    const refAmount = referrer.reduce((acc, curr) => acc + curr.bonusAmount, 0);
+
+    // Add custom properties to user object
+    const userWithRefInfo = {
+      ...user.toObject(), // Convert Mongoose doc to plain object
       refCount: referrer.length,
-      refAmount
-    }
+      refAmount: refAmount
+    };
 
-    res.status(200).json({ success: true, user: Data });
+    res.status(200).json({ success: true, user: userWithRefInfo });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 exports.updateProfile = async (req, res) => {
   try {
