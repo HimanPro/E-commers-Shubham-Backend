@@ -19,16 +19,18 @@ exports.getUserProfile = async (req, res) => {
 
     const referrer = await Referral.find({ referrer: userId });
     const cashback = await Cashback.find({ user: userId });
-
     const refAmount = referrer.reduce((acc, curr) => acc + curr.bonusAmount, 0);
     const cashBack = cashback.reduce((acc, curr) => acc + curr.amount, 0);
 
     const userWithRefInfo = {
-      ...user.toObject(), // Convert Mongoose doc to plain object
+      ...user.toObject(), 
       refCount: referrer.length,
       refAmount: refAmount,
       cashBackAmt: cashBack,
     };
+
+    user.totalEarned = cashBack + refAmount;
+    user.save();
 
     res.status(200).json({ success: true, user: userWithRefInfo });
   } catch (error) {
