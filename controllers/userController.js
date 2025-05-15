@@ -20,7 +20,8 @@ exports.getUserProfile = async (req, res) => {
     
     user.refCount = referrer.length;
     user.refAmount = refAmount;
-    
+    await user.save();
+
     res.status(200).json({ success: true, user });
   } catch (error) {
     res.status(500).json({ message: error.message });
