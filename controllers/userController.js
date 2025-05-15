@@ -17,7 +17,11 @@ exports.getUserProfile = async (req, res) => {
       return acc + curr.bonusAmount;
     }
     , 0);
-    res.status(200).json({ success: true, user, refAmount, refCount: referrer.length });
+    
+    user.refCount = referrer.length;
+    user.refAmount = refAmount;
+    
+    res.status(200).json({ success: true, user });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
