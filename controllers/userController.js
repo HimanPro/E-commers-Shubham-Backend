@@ -90,6 +90,7 @@ exports.requestWithdrawal = async (req, res) => {
 
     // Deduct from wallet and move to pendingWithdrawal
     user.walletBalance -= amount;
+    user.totalWithdrawn += amount;
     await user.save();
 
     // Create withdrawal request (pending)
