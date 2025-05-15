@@ -152,7 +152,8 @@ exports.register = async (req, res) => {
       phone: details.phoneNumber,
       password: details.password,
       referralCode: details.referralId || null,
-      walletBalance: walletBonus, 
+      walletBalance: walletBonus,
+      totalEarned: walletBonus,
       referralBonus: 0,
     });
 
