@@ -155,34 +155,36 @@ router.get("/adminInfo", async (req, res) => {
             totalUsers,
             totalPendingWithdrawals,
             totalSuccessWithdrawals,
-            totalReferralsJoined,
             totalInvestmentDocs,
-            cashbackDocs
+            cashbackDocs,
+            referralDocs
         ] = await Promise.all([
             User.countDocuments(),
             Withdrawal.countDocuments({ status: "pending" }),
             Withdrawal.countDocuments({ status: "success" }),
-            Referral.countDocuments(),
-            Order.find({}, 'totalAmount'), // only fetch totalAmount
-            Cashback.find({}, 'amount')   // only fetch amount
+            Order.find({}, 'totalAmount'),      // only fetch totalAmount
+            Cashback.find({}, 'amount'),        // only fetch amount
+            Referral.find({}, 'bonusAmount')    // only fetch bonusAmount
         ]);
 
         const totalInvestmentAmount = totalInvestmentDocs.reduce((sum, o) => sum + o.totalAmount, 0);
         const totalCashback = cashbackDocs.reduce((sum, c) => sum + c.amount, 0);
+        const totalReferralBonus = referralDocs.reduce((sum, r) => sum + r.bonusAmount + 50, 0);
 
         res.json({
             totalUsers,
             totalPendingWithdrawals,
             totalSuccessWithdrawals,
             totalInvestmentAmount,
-            totalReferralsJoined,
-            totalCashback
+            totalCashback,
+            totalReferralBonus
         });
     } catch (error) {
         console.error("adminInfo error:", error);
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 });
+
 
 
 module.exports = router;
