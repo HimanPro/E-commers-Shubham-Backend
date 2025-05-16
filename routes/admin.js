@@ -51,6 +51,32 @@ router.get("/totalWithdrawnAldGroup", async (req, res) => {
     }
 })
 
+// POST /api/withdrawals/approve
+router.post("/approveWithdrawals", async (req, res) => {
+    const { ids } = req.body; // expecting an array of withdrawal _ids
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ success: false, message: "No withdrawal IDs provided" });
+    }
+
+    try {
+        const result = await Withdrawal.updateMany(
+            { _id: { $in: ids }, status: "pending" },
+            { $set: { status: "success" } }
+        );
+
+        return res.status(200).json({ 
+            success: true, 
+            message: "Withdrawals approved successfully", 
+            modifiedCount: result.modifiedCount 
+        });
+    } catch (error) {
+        console.error("Approval Error:", error);
+        return res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
+
 router.get("/singleUserWithdrawnAldGroup",async (req, res) => {
     const { user } = req.query;
     try {
