@@ -50,4 +50,31 @@ router.get("/totalWithdrawnAldGroup", async (req, res) => {
     }
 })
 
+router.get("/singleUserWithdrawnAldGroup",async (req, res) => {
+    const { user } = req.query;
+    try {
+        let data = await User.findOne({ userId: user });
+
+        if (!data) {
+            data = await User.findOne({ phone: user });    
+            if (!data) {
+                return res.status(404).json({ success: false, message: 'User not found' });
+            }
+        }
+        // res.json({data});
+        const withdrawals = await Withdrawal.find({ userId: data.userId }).sort({ createdAt: 1 });
+        if (!withdrawals) {
+            return res.status(404).json({ success: false, message: 'No withdrawals found for this user' });
+        }
+        let total = 0;
+        for (let i = 0; i < withdrawals.length; i++) {
+            total += withdrawals[i].amount;
+        }
+        res.json({data: withdrawals, totalWithdrawn: total });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+})
+
 module.exports = router;
