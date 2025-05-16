@@ -9,6 +9,7 @@ const auth = require('./routes/auth');
 const user = require('./routes/user');
 const order = require('./routes/order');
 const payment = require('./routes/payment');
+const admin = require('./routes/admin');
 const Order = require('./models/Order');
 const User = require('./models/User');
 const Cashback = require('./models/Cashback');
@@ -37,6 +38,7 @@ app.use('/api/auth', auth);
 app.use('/api/users', user);
 app.use('/api/orders', order);
 app.use('/api/payments', payment);
+app.use('/api/admin', admin);
 
 const pkgRewards = {
   pkg500: { reward: 15, days: 50 },
