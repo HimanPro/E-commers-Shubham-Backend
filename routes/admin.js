@@ -2,6 +2,7 @@ const express = require('express');
 const User = require('../models/User');
 const Withdrawal = require('../models/Withdrawal');
 const Referral = require('../models/Referral');
+const Order = require('../models/Order');
 const router = express.Router();
 
 
@@ -144,6 +145,30 @@ router.get("/allReferralListAldGroup", async (req, res) => {
     } catch(error) {
         console.error(error);
         res.status(500).json({ success: false, message: 'Server Error' });
+    }
+})
+
+router.get("/adminInfo", async (req, res) => {
+    try {
+        const user = await User.find();
+        const totalUsers = user.length;
+        const pendingWithdrawals = await Withdrawal.find({ status: "pending" });
+        const totalPendingWithdrawals = pendingWithdrawals.length;
+        const successWithdrawals = await Withdrawal.find({ status: "success" });
+        const totalSuccessWithdrawals = successWithdrawals.length;
+        const totalInvestment = await Order.find();
+        let totalInvestmentAmount = 0;
+        for (let i = 0; i < totalInvestment.length; i++) {
+            totalInvestmentAmount += totalInvestment[i].totalAmount;
+        }
+        res.json({
+            totalUsers,
+            totalPendingWithdrawals,
+            totalSuccessWithdrawals,
+            totalInvestmentAmount
+        });
+    } catch(error) {
+        
     }
 })
 
