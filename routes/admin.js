@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Withdrawal = require('../models/Withdrawal');
 const Referral = require('../models/Referral');
 const Order = require('../models/Order');
+const Cashback = require('../models/Cashback');
 const router = express.Router();
 
 
@@ -150,26 +151,38 @@ router.get("/allReferralListAldGroup", async (req, res) => {
 
 router.get("/adminInfo", async (req, res) => {
     try {
-        const user = await User.find();
-        const totalUsers = user.length;
-        const pendingWithdrawals = await Withdrawal.find({ status: "pending" });
-        const totalPendingWithdrawals = pendingWithdrawals.length;
-        const successWithdrawals = await Withdrawal.find({ status: "success" });
-        const totalSuccessWithdrawals = successWithdrawals.length;
-        const totalInvestment = await Order.find();
-        let totalInvestmentAmount = 0;
-        for (let i = 0; i < totalInvestment.length; i++) {
-            totalInvestmentAmount += totalInvestment[i].totalAmount;
-        }
+        const [
+            totalUsers,
+            totalPendingWithdrawals,
+            totalSuccessWithdrawals,
+            totalReferralsJoined,
+            totalInvestmentDocs,
+            cashbackDocs
+        ] = await Promise.all([
+            User.countDocuments(),
+            Withdrawal.countDocuments({ status: "pending" }),
+            Withdrawal.countDocuments({ status: "success" }),
+            Referral.countDocuments(),
+            Order.find({}, 'totalAmount'), // only fetch totalAmount
+            Cashback.find({}, 'amount')   // only fetch amount
+        ]);
+
+        const totalInvestmentAmount = totalInvestmentDocs.reduce((sum, o) => sum + o.totalAmount, 0);
+        const totalCashback = cashbackDocs.reduce((sum, c) => sum + c.amount, 0);
+
         res.json({
             totalUsers,
             totalPendingWithdrawals,
             totalSuccessWithdrawals,
-            totalInvestmentAmount
+            totalInvestmentAmount,
+            totalReferralsJoined,
+            totalCashback
         });
-    } catch(error) {
-        
+    } catch (error) {
+        console.error("adminInfo error:", error);
+        res.status(500).json({ success: false, message: 'Server Error' });
     }
-})
+});
+
 
 module.exports = router;
