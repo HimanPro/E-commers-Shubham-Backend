@@ -10,7 +10,12 @@ const withdrawalSchema = new mongoose.Schema({
     accountHolderName: { type: String, required: true }
   },
   status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
-  requestedAt: { type: Date, default: Date.now }
+  requestedAt: { type: Date, default: Date.now },
+  approvedAt: { type: Date, default: Date.now },
+  referenceNumber: {
+    type: String,
+    required: false // or true if you always want it
+  }
 });
 
 module.exports = mongoose.model('Withdrawal', withdrawalSchema);

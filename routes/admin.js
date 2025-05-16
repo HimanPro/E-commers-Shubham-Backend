@@ -53,28 +53,46 @@ router.get("/totalWithdrawnAldGroup", async (req, res) => {
 
 // POST /api/withdrawals/approve
 router.post("/approveWithdrawals", async (req, res) => {
-    const { ids } = req.body; // expecting an array of withdrawal _ids
+    const { ids, referenceNumber } = req.body;
 
+    // Validate input
     if (!Array.isArray(ids) || ids.length === 0) {
         return res.status(400).json({ success: false, message: "No withdrawal IDs provided" });
+    }
+
+    if (!referenceNumber || typeof referenceNumber !== "string") {
+        return res.status(400).json({ success: false, message: "Reference number is required" });
+    }
+
+    // Example: Validate reference number (alphanumeric, 8–20 chars)
+    const refRegex = /^[A-Za-z0-9]{8,20}$/;
+    if (!refRegex.test(referenceNumber)) {
+        return res.status(400).json({ success: false, message: "Invalid reference number format" });
     }
 
     try {
         const result = await Withdrawal.updateMany(
             { _id: { $in: ids }, status: "pending" },
-            { $set: { status: "success" } }
+            {
+                $set: {
+                    status: "success",
+                    referenceNumber: referenceNumber,
+                    approvedAt: new Date()
+                }
+            }
         );
 
-        return res.status(200).json({ 
-            success: true, 
-            message: "Withdrawals approved successfully", 
-            modifiedCount: result.modifiedCount 
+        return res.status(200).json({
+            success: true,
+            message: "Withdrawals approved with reference number",
+            modifiedCount: result.modifiedCount
         });
     } catch (error) {
         console.error("Approval Error:", error);
         return res.status(500).json({ success: false, message: "Server Error" });
     }
 });
+
 
 
 router.get("/singleUserWithdrawnAldGroup",async (req, res) => {
