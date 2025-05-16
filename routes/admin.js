@@ -70,7 +70,6 @@ router.get("/singleUserWithdrawnAldGroup",async (req, res) => {
         let total = 0;
         for (let i = 0; i < withdrawals.length; i++) {
             total += withdrawals[i].amount;
-            total += 50;
         }
         res.json({data: withdrawals, totalWithdrawn: total });
     } catch (error) {
@@ -88,6 +87,7 @@ router.get("/allReferralListAldGroup", async (req, res) => {
         let total = 0;
         for (let i = 0; i < data.length; i++) {
             total += data[i].bonusAmount;
+            total += 50;
         }
         res.json({data, totalReferralBonus: total });
     } catch(error) {
