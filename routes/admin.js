@@ -70,6 +70,7 @@ router.get("/singleUserWithdrawnAldGroup",async (req, res) => {
         let total = 0;
         for (let i = 0; i < withdrawals.length; i++) {
             total += withdrawals[i].amount;
+            total += 50;
         }
         res.json({data: withdrawals, totalWithdrawn: total });
     } catch (error) {
