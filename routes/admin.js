@@ -1,5 +1,6 @@
 const express = require('express');
 const User = require('../models/User');
+const Withdrawal = require('../models/Withdrawal');
 const router = express.Router();
 
 
@@ -27,6 +28,23 @@ router.get("/singleUserAldGroup",async (req, res) => {
         }
         res.json({data});
     } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+})
+
+router.get("/totalWithdrawnAldGroup", async (req, res) => {
+    try {
+        const data = await Withdrawal.find().sort({ createdAt: 1 });
+        if (!data) {
+            return res.status(404).json({ success: false, message: 'No withdrawals found' });
+        }
+        let total = 0;
+        for (let i = 0; i < data.length; i++) {
+            total += data[i].amount;
+        }
+        res.json({data, totalWithdrawn: total });
+    } catch(error) {
         console.error(error);
         res.status(500).json({ success: false, message: 'Server Error' });
     }
