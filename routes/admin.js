@@ -14,4 +14,22 @@ router.get("/allUsers", async (req, res) => {
     }
 })
 
+router.get("/singleUser",async (req, res) => {
+    const { user } = req.query;
+    try {
+        let data = await User.findOne({ userId: user });
+
+        if (!data) {
+            data = await User.findOne({ phone: user });    
+            if (!data) {
+                return res.status(404).json({ success: false, message: 'User not found' });
+            }
+        }
+        res.json({data});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+})
+
 module.exports = router;
