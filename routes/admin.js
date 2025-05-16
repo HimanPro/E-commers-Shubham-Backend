@@ -1,6 +1,7 @@
 const express = require('express');
 const User = require('../models/User');
 const Withdrawal = require('../models/Withdrawal');
+const Referral = require('../models/Referral');
 const router = express.Router();
 
 
@@ -46,7 +47,7 @@ router.get("/totalWithdrawnAldGroup", async (req, res) => {
         res.json({data, totalWithdrawn: total });
     } catch(error) {
         console.error(error);
-        res.status(500).json({ success: false, message: 'Server Error' });
+        res.status(500).json({ success: false, message: 'Server Error' });  
     }
 })
 
@@ -72,6 +73,23 @@ router.get("/singleUserWithdrawnAldGroup",async (req, res) => {
         }
         res.json({data: withdrawals, totalWithdrawn: total });
     } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+})
+
+router.get("/allReferralListAldGroup", async (req, res) => {
+    try {
+        const data = await Referral.find().sort({createdAt: 1});
+        if (!data) {
+            return res.status(404).json({ success: false, message: 'No referrals found' });
+        }
+        let total = 0;
+        for (let i = 0; i < data.length; i++) {
+            total += data[i].bonusAmount;
+        }
+        res.json({data, totalReferralBonus: total });
+    } catch(error) {
         console.error(error);
         res.status(500).json({ success: false, message: 'Server Error' });
     }
