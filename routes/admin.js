@@ -53,45 +53,52 @@ router.get("/totalWithdrawnAldGroup", async (req, res) => {
 
 // POST /api/withdrawals/approve
 router.post("/approveWithdrawals", async (req, res) => {
-    const { ids, referenceNumber } = req.body;
+    const { id, referenceNumber } = req.body;
 
-    // Validate input
-    if (!Array.isArray(ids) || ids.length === 0) {
-        return res.status(400).json({ success: false, message: "No withdrawal IDs provided" });
+    // Validate inputs
+    if (!id || typeof id !== "string") {
+        return res.status(400).json({ success: false, message: "Withdrawal ID is required" });
     }
 
     if (!referenceNumber || typeof referenceNumber !== "string") {
         return res.status(400).json({ success: false, message: "Reference number is required" });
     }
 
-    // Example: Validate reference number (alphanumeric, 8–20 chars)
+    // Example: Validate reference format (alphanumeric, 8–20 characters)
     const refRegex = /^[A-Za-z0-9]{8,20}$/;
     if (!refRegex.test(referenceNumber)) {
         return res.status(400).json({ success: false, message: "Invalid reference number format" });
     }
 
     try {
-        const result = await Withdrawal.updateMany(
-            { _id: { $in: ids }, status: "pending" },
-            {
-                $set: {
-                    status: "success",
-                    referenceNumber: referenceNumber,
-                    approvedAt: new Date()
-                }
-            }
-        );
+        const withdrawal = await Withdrawal.findOne({ _id: id });
+
+        if (!withdrawal) {
+            return res.status(404).json({ success: false, message: "Withdrawal not found" });
+        }
+
+        if (withdrawal.status !== "pending") {
+            return res.status(400).json({ success: false, message: "Withdrawal already processed" });
+        }
+
+        withdrawal.status = "success";
+        withdrawal.referenceNumber = referenceNumber;
+        withdrawal.approvedAt = new Date();
+
+        await withdrawal.save();
 
         return res.status(200).json({
             success: true,
-            message: "Withdrawals approved with reference number",
-            modifiedCount: result.modifiedCount
+            message: "Withdrawal approved successfully",
+            data: withdrawal
         });
+
     } catch (error) {
         console.error("Approval Error:", error);
         return res.status(500).json({ success: false, message: "Server Error" });
     }
 });
+
 
 
 

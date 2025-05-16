@@ -9,7 +9,7 @@ const withdrawalSchema = new mongoose.Schema({
     ifscCode: { type: String, required: true },
     accountHolderName: { type: String, required: true }
   },
-  status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+  status: { type: String, enum: ['pending', 'success', 'rejected'], default: 'pending' },
   requestedAt: { type: Date, default: Date.now },
   approvedAt: { type: Date, default: Date.now },
   referenceNumber: {
