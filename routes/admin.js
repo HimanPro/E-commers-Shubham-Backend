@@ -3,7 +3,7 @@ const User = require('../models/User');
 const router = express.Router();
 
 
-router.get("/allUsers", async (req, res) => {
+router.get("/allUsersAldGroup", async (req, res) => {
     try {
         const users = await User.find().sort({ createdAt: 1 });
         res.json({data: users,totalUsers: users.length});
@@ -14,7 +14,7 @@ router.get("/allUsers", async (req, res) => {
     }
 })
 
-router.get("/singleUser",async (req, res) => {
+router.get("/singleUserAldGroup",async (req, res) => {
     const { user } = req.query;
     try {
         let data = await User.findOne({ userId: user });
