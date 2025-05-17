@@ -7,15 +7,14 @@ exports.createOrder = async (req, res) => {
   console.log(req.body, "Body Data");
   try {
     const { razorpay_payment_id, formData } = req.body;
-    const { amount, pkgId, name, phone, address, onlyBuy } = formData;
+    const { amount, pkgId, name, phone, address, onlyBuy, product } = formData;
     const userId = req.user.id;
     if (
       !razorpay_payment_id ||
       !amount ||
       !pkgId ||
       !name ||
-      !phone ||
-      !address
+      !phone
     ) {
       return res
         .status(400)
@@ -40,6 +39,7 @@ exports.createOrder = async (req, res) => {
       onlyBuy,
       name,
       phone,
+      product,
       address: {
         line1,
         line2,
