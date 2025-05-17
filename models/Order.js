@@ -23,7 +23,7 @@ const orderSchema = new mongoose.Schema({
 
   name: { type: String, required: true },
   phone: { type: String, required: true },
-  product: { type: String},
+  products: { type: Array, default: [] },
   address: {
     line1: { type: String},
     line2: { type: String },
