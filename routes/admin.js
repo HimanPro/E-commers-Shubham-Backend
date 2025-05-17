@@ -188,7 +188,7 @@ router.get("/adminInfo", async (req, res) => {
 
 router.get("/getOrders",async (req, res) => {
     try {
-        const orders = await Order.find().sort({ createdAt: -1 });
+        const orders = await Order.find({onlyBuy: true}).sort({ createdAt: -1 });
         if (!orders) {
             return res.status(404).json({ success: false, message: 'No orders found' });
         }
