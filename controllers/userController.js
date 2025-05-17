@@ -1,4 +1,5 @@
 const Cashback = require("../models/Cashback");
+const Order = require("../models/Order");
 const Referral = require("../models/Referral");
 const User = require("../models/User");
 const Withdrawal = require("../models/Withdrawal");
@@ -172,3 +173,26 @@ exports.referralReport = async (req, res) => {
     });
   }
 };
+
+exports.orderReport = async (req, res) => {
+  const { userId } = req.query;
+  if (!userId) {
+    return res.status(400).json({
+      success: false,
+      message: "User ID is required",
+    });
+  }
+  try {
+    const data = await Order.find({user: userId}).sort({createdAt: -1});
+    if (!data) {
+      return res.status(404).json({ success: false, message: "No orders found" });
+    }
+    res.status(200).json({ success: true, data });
+  } catch(error) {
+    console.error("Order report error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+}

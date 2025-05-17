@@ -6,7 +6,8 @@ const {
   updateProfile,
   requestWithdrawal,
   withdrawalReport,
-  referralReport
+  referralReport,
+  orderReport
 } = require('../controllers/userController');
 
 router.use(protect);
@@ -16,6 +17,7 @@ router.put('/me', updateProfile);
 router.post('/withdraw', requestWithdrawal);
 router.get('/withdrawReport', withdrawalReport);
 router.get('/referralReport', referralReport);
+router.get('/orderReport', orderReport);
 
 
 
