@@ -198,6 +198,18 @@ router.get("/getOrders",async (req, res) => {
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 })
+router.get("/getInvestment",async (req, res) => {
+    try {
+        const orders = await Order.find({onlyBuy: false}).sort({ createdAt: -1 });
+        if (!orders) {
+            return res.status(404).json({ success: false, message: 'No orders found' });
+        }
+        res.json({data: orders, totalOrders: orders.length });
+    } catch(error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+})
 
 
 
