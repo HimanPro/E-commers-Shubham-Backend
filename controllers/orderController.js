@@ -84,7 +84,7 @@ exports.getCashback = async (req, res) => {
     return res.status(400).json({ success: false, message: "Missing userId" });
   }
   try {
-    const cashback = await Cashback.find({user: userId}).sort({createdAt: -1});
+    const cashback = await Cashback.find({user: userId}).sort({creditedAt: -1});
     if(!cashback) {
       return res.status(404).json({ success: false, message: "No cashback found" });
     }
