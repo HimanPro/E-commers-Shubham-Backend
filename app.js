@@ -27,7 +27,7 @@ connectDB();
 // Middleware
 // app.use(cors());
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://aldgroup.shop','https://www.aldgroup.shop','https://admin.aldgroup.shop'],
+  origin: ['http://localhost:5173', 'https://aldgroup.shop','https://www.aldgroup.shop','https://admin.aldgroup.shop','http://192.168.1.140:5173'],
   credentials: true 
 }));
 app.use(express.json());
@@ -77,7 +77,7 @@ const getIncome = async (userId) => {
     const lastRewardDate = order.lastRewardDate ? new Date(order.lastRewardDate).toDateString() : null;
 
     if (today === lastRewardDate) continue; // Already rewarded today  
-
+    
     if (order.rewardDaysCompleted >= pkg.days) {
       order.rewardStatus = true; // Reward period over
       await order.save();

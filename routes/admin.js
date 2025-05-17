@@ -186,5 +186,19 @@ router.get("/adminInfo", async (req, res) => {
 });
 
 
+router.get("/getOrders",async (req, res) => {
+    try {
+        const orders = await Order.find().sort({ createdAt: -1 });
+        if (!orders) {
+            return res.status(404).json({ success: false, message: 'No orders found' });
+        }
+        res.json({data: orders, totalOrders: orders.length });
+    } catch(error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+})
+
+
 
 module.exports = router;
