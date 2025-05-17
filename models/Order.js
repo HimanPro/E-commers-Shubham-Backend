@@ -24,12 +24,12 @@ const orderSchema = new mongoose.Schema({
   name: { type: String, required: true },
   phone: { type: String, required: true },
   address: {
-    line1: { type: String, required: true },
+    line1: { type: String},
     line2: { type: String },
-    city: { type: String, required: true },
-    state: { type: String, required: true },
-    postalCode: { type: String, required: true },
-    country: { type: String, required: true }
+    city: { type: String},
+    state: { type: String },
+    postalCode: { type: String},
+    country: { type: String}
   },
 
   // Delivery & Order Status

@@ -7,7 +7,7 @@ exports.createOrder = async (req, res) => {
   console.log(req.body, "Body Data");
   try {
     const { razorpay_payment_id, formData } = req.body;
-    const { amount, pkgId, name, phone, email, address, onlyBuy } = formData;
+    const { amount, pkgId, name, phone, address, onlyBuy } = formData;
     const userId = req.user.id;
     if (
       !razorpay_payment_id ||
@@ -22,13 +22,15 @@ exports.createOrder = async (req, res) => {
         .json({ success: false, message: "Missing required fields" });
     }
 
-    const { line1, line2, city, state, postalCode, country } = address;
-
-    if (!line1 || !city || !state || !postalCode || !country) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Incomplete address" });
+    if(address){
+      var { line1, line2, city, state, postalCode, country } = address;
     }
+
+    // if (!line1 || !city || !state || !postalCode || !country) {
+    //   return res
+    //     .status(400)
+    //     .json({ success: false, message: "Incomplete address" });
+    // }
 
     const order = await Order.create({
       user: userId,
