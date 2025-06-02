@@ -16,7 +16,9 @@ exports.createOrder = async (req, res) => {
       !amount ||
       !pkgId ||
       !name ||
-      !phone
+      !phone ||
+      !reference ||
+      !image
     ) {
       return res
         .status(400)
@@ -43,6 +45,8 @@ exports.createOrder = async (req, res) => {
       paymentScreenShot: image,
       phone,
       products,
+      reference,
+      qr: image,
       address: {
         line1,
         line2,
@@ -68,6 +72,36 @@ exports.createOrder = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+exports.verifyPayment = async (req, res) => {
+  try {
+    const { orderId } = req.body;
+
+    if (!orderId) {
+      return res.status(400).json({ success: false, message: "Order ID is required" });
+    }
+
+    const order = await Order.findByIdAndUpdate(
+      orderId,
+      { $set: { paymentStatus: true } },
+      { new: true }
+    );
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Payment verified successfully",
+      order,
+    });
+  } catch (error) {
+    console.error("Verify Payment Error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 
 exports.getUserOrders = async (req, res) => {
   try {

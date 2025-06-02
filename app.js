@@ -8,7 +8,7 @@ const cron = require('node-cron');
 const auth = require('./routes/auth');
 const user = require('./routes/user');
 const order = require('./routes/order');
-const payment = require('./routes/payment');
+const support = require('./routes/support');
 const admin = require('./routes/admin');
 const Order = require('./models/Order');
 const User = require('./models/User');
@@ -37,8 +37,9 @@ app.use(morgan('dev'));
 app.use('/api/auth', auth);
 app.use('/api/users', user);
 app.use('/api/orders', order);
-app.use('/api/payments', payment);
+// app.use('/api/payments', payment);
 app.use('/api/admin', admin);
+app.use('/api/support', support);
 
 const pkgRewards = {
   pkg500: { reward: 15, days: 50 },
@@ -59,6 +60,8 @@ const pkgRewards = {
 const getIncome = async (userId) => {
   const orderData = await Order.find({ user: userId }).sort({ createdAt: -1 });
   if (!orderData) return;
+  
+  // if(orderData.paymentStatus === false) return;
 
   const userData = await User.findOne({ userId });
   if (!userData) return;
@@ -66,6 +69,7 @@ const getIncome = async (userId) => {
   for (let i = 0; i < orderData.length; i++) {
     const order = orderData[i];
 
+    if (order.paymentStatus === false) continue; // Skip unpaid orders
     if (order.onlyBuy === true) continue;
     if (order.rewardStatus === true) continue; // Skip if reward already completed
 

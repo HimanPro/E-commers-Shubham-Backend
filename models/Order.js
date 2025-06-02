@@ -3,10 +3,8 @@ const mongoose = require('mongoose');
 const orderSchema = new mongoose.Schema({
   user: { type: String, required: true }, 
   totalAmount: { type: Number, required: true },
-  paymentStatus: { type: Boolean, default: true },
+  paymentStatus: { type: Boolean, default: false }, // changed here 
   // razorpay_payment_id: { type: String, required: true },
-  reference: { type: String, required: true }, 
-  paymentScreenShot: { type: String, required: true }, 
   pkgId: { type: String, required: true },
   onlyBuy: { type: Boolean, required: true },
   rewardStatus: {
@@ -21,6 +19,10 @@ const orderSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+
+
+  reference: { type: String, default: null , required: true},
+  qr: { type: String, default: null  , required: true},
   
 
   name: { type: String, required: true },
