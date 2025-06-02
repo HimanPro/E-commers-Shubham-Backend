@@ -94,10 +94,10 @@ exports.requestWithdrawal = async (req, res) => {
     }
 
     // 🔒 Weekly Withdrawal Restriction Logic
-    const lastWithdrawal = await Withdrawal.findOne({ userId }).sort({ createdAt: -1 });
+    const lastWithdrawal = await Withdrawal.findOne({ userId }).sort({ requestedAt: -1 });
 
     if (lastWithdrawal) {
-      const lastDate = new Date(lastWithdrawal.createdAt);
+      const lastDate = new Date(lastWithdrawal.requestedAt);
       const now = new Date();
       const diffInDays = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24));
 
