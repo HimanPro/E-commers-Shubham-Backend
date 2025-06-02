@@ -75,12 +75,16 @@ exports.requestWithdrawal = async (req, res) => {
     const { amount, userId } = req.body;
     const user = await User.findOne({ userId });
 
-    if (user.walletBalance < 110) {
-      return res.status(400).json({
-        success: false,
-        message: "You must have at least ₹110 in wallet to withdraw.",
-      });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found." });
     }
+
+    // if (user.walletBalance < 110) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "You must have at least ₹110 in wallet to withdraw.",
+    //   });
+    // }
 
     if (amount > user.walletBalance) {
       return res.status(400).json({
@@ -89,12 +93,28 @@ exports.requestWithdrawal = async (req, res) => {
       });
     }
 
-    // Deduct from wallet and move to pendingWithdrawal
+    // 🔒 Weekly Withdrawal Restriction Logic
+    const lastWithdrawal = await Withdrawal.findOne({ userId }).sort({ createdAt: -1 });
+
+    if (lastWithdrawal) {
+      const lastDate = new Date(lastWithdrawal.createdAt);
+      const now = new Date();
+      const diffInDays = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24));
+
+      if (diffInDays < 7) {
+        return res.status(403).json({
+          success: false,
+          message: `You can only withdraw once every 7 days. Last withdrawal was ${diffInDays} day(s) ago.`,
+        });
+      }
+    }
+
+    // 🏦 Deduct from wallet and move to pendingWithdrawal
     user.walletBalance -= amount;
     user.totalWithdrawn += amount;
     await user.save();
 
-    // Create withdrawal request (pending)
+    // 📝 Create withdrawal request
     const withdrawal = await Withdrawal.create({
       userId: user.userId,
       name: user.name,
@@ -112,11 +132,13 @@ exports.requestWithdrawal = async (req, res) => {
       message: "Withdrawal request submitted successfully.",
       withdrawal,
     });
+
   } catch (error) {
     console.error("Withdrawal request error:", error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
 exports.withdrawalReport = async (req, res) => {
   try {
     const { userId } = req.query;
