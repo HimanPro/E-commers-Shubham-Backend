@@ -6,11 +6,13 @@ const User = require("../models/User");
 exports.createOrder = async (req, res) => {
   console.log(req.body, "Body Data");
   try {
-    const { razorpay_payment_id, formData } = req.body;
-    const { amount, pkgId, name, phone, address, onlyBuy, products } = formData;
+    // const { razorpay_payment_id, formData } = req.body;
+    const {  formData } = req.body;
+
+
+    const { amount, pkgId, name, phone, address, onlyBuy, products, reference, image } = req.body;
     const userId = req.user.id;
     if (
-      !razorpay_payment_id ||
       !amount ||
       !pkgId ||
       !name ||
@@ -34,10 +36,11 @@ exports.createOrder = async (req, res) => {
     const order = await Order.create({
       user: userId,
       totalAmount: amount,
-      razorpay_payment_id,
       pkgId,
       onlyBuy,
       name,
+      reference,
+      paymentScreenShot: image,
       phone,
       products,
       address: {

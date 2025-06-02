@@ -4,7 +4,9 @@ const orderSchema = new mongoose.Schema({
   user: { type: String, required: true }, 
   totalAmount: { type: Number, required: true },
   paymentStatus: { type: Boolean, default: true },
-  razorpay_payment_id: { type: String, required: true },
+  // razorpay_payment_id: { type: String, required: true },
+  reference: { type: String, required: true }, 
+  paymentScreenShot: { type: String, required: true }, 
   pkgId: { type: String, required: true },
   onlyBuy: { type: Boolean, required: true },
   rewardStatus: {
