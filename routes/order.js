@@ -6,7 +6,7 @@ const { createOrder, getCashback, verifyPayment } = require('../controllers/orde
 router.use(protect);
 
 router.post('/dispatch-order', createOrder);
-router.post("/verify-payment", verifyPayment);
+// router.post("/verify-payment", verifyPayment);
 router.get('/getCashback', getCashback);
 
 module.exports = router;
