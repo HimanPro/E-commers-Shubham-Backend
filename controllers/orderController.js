@@ -9,6 +9,8 @@ exports.createOrder = async (req, res) => {
     // const { razorpay_payment_id, formData } = req.body;
     const {  formData } = req.body;
 
+    console.log(req.user, "User Data");
+
 
     const { amount, pkgId, name, phone, address, onlyBuy, products, reference, image } = req.body;
     const userId = req.user.id;
