@@ -201,7 +201,7 @@ router.get("/getAllPayments",async (req, res) => {
 
 router.get("/getOrders",async (req, res) => {
     try {
-        const orders = await Order.find({onlyBuy: true}).sort({ createdAt: -1 });
+        const orders = await Order.find({onlyBuy: true, paymentStatus: true}).sort({ createdAt: -1 });
         if (!orders) {
             return res.status(404).json({ success: false, message: 'No orders found' });
         }
@@ -213,7 +213,7 @@ router.get("/getOrders",async (req, res) => {
 })
 router.get("/getInvestment",async (req, res) => {
     try {
-        const orders = await Order.find({onlyBuy: false}).sort({ createdAt: -1 });
+        const orders = await Order.find({onlyBuy: false, paymentStatus: true}).sort({ createdAt: -1 });
         if (!orders) {
             return res.status(404).json({ success: false, message: 'No orders found' });
         }
