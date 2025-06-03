@@ -28,6 +28,7 @@ const orderSchema = new mongoose.Schema({
   name: { type: String, required: true },
   phone: { type: String, required: true },
   products: { type: Array, default: [] },
+  productSizes: { type: Array, default: [] },
   address: {
     line1: { type: String},
     line2: { type: String },

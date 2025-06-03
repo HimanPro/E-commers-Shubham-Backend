@@ -7,27 +7,30 @@ exports.createOrder = async (req, res) => {
   console.log(req.body, "Body Data");
   try {
     // const { razorpay_payment_id, formData } = req.body;
-    const {  formData } = req.body;
+    const { formData } = req.body;
 
     console.log(req.user, "User Data");
 
-
-    const { amount, pkgId, name, phone, address, onlyBuy, products, reference, image } = req.body;
+    const {
+      amount,
+      pkgId,
+      name,
+      phone,
+      address,
+      onlyBuy,
+      products,
+      productSizes,
+      reference,
+      image,
+    } = req.body;
     const userId = req.user.id;
-    if (
-      !amount ||
-      !pkgId ||
-      !name ||
-      !phone ||
-      !reference ||
-      !image
-    ) {
+    if (!amount || !pkgId || !name || !phone || !reference || !image) {
       return res
         .status(400)
         .json({ success: false, message: "Missing required fields" });
     }
 
-    if(address){
+    if (address) {
       var { line1, line2, city, state, postalCode, country } = address;
     }
 
@@ -47,6 +50,7 @@ exports.createOrder = async (req, res) => {
       paymentScreenShot: image,
       phone,
       products,
+      productSizes,
       reference,
       qr: image,
       address: {
@@ -104,7 +108,6 @@ exports.createOrder = async (req, res) => {
 //   }
 // };
 
-
 exports.getUserOrders = async (req, res) => {
   try {
     const orders = await Order.find({ user: req.user._id })
@@ -118,18 +121,22 @@ exports.getUserOrders = async (req, res) => {
 };
 
 exports.getCashback = async (req, res) => {
-  const {userId} = req.query;
-  if(!userId) {
+  const { userId } = req.query;
+  if (!userId) {
     return res.status(400).json({ success: false, message: "Missing userId" });
   }
   try {
-    const cashback = await Cashback.find({user: userId}).sort({creditedAt: -1});
-    if(!cashback) {
-      return res.status(404).json({ success: false, message: "No cashback found" });
+    const cashback = await Cashback.find({ user: userId }).sort({
+      creditedAt: -1,
+    });
+    if (!cashback) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No cashback found" });
     }
     res.status(200).json({ success: true, cashback });
   } catch (error) {
     console.error("Get Cashback Error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
-}
+};
