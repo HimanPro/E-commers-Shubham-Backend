@@ -4,6 +4,7 @@ const Withdrawal = require('../models/Withdrawal');
 const Referral = require('../models/Referral');
 const Order = require('../models/Order');
 const Cashback = require('../models/Cashback');
+const AdminCred = require('../models/AdminCred');
 const router = express.Router();
 
 
@@ -281,6 +282,28 @@ router.post("/dispatch-purchase", async (req, res) => {
         console.error("Verify Payment Error:", error);
         res.status(500).json({ success: false, message: "Server error" });
       }
+})
+
+
+router.post("/admin-login", async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ success: false, message: 'Email and password are required' });
+    }
+
+    try {
+        const adminCred = await AdminCred.findOne({ email });
+
+        if (!adminCred || adminCred.password !== password) {
+            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        }
+
+        res.json({ success: true, message: 'Login successful', data: adminCred });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
 })
 
 
