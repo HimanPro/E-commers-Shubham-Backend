@@ -22,7 +22,7 @@ const orderSchema = new mongoose.Schema({
 
 
   reference: { type: String, default: null , required: true},
-  qr: { type: String, default: null  , required: true},
+  qr: { type: String, default: null},
   
 
   name: { type: String, required: true },
