@@ -70,8 +70,44 @@ const getIncome = async (userId) => {
     const order = orderData[i];
 
     if (order.paymentStatus === false) continue; // Skip unpaid orders
-    if (order.onlyBuy === true) continue;
     if (order.rewardStatus === true) continue; // Skip if reward already completed
+    if (order.onlyBuy === true) {
+      if (!order.rewardMonthsCompleted) order.rewardMonthsCompleted = 0;
+    
+      const orderDate = new Date(order.createdAt);
+      const currentDate = new Date();
+    
+      const monthsPassed = Math.floor((currentDate - orderDate) / (1000 * 60 * 60 * 24 * 30));
+    
+      if (monthsPassed >= order.rewardMonthsCompleted + 1 && order.rewardMonthsCompleted < 3) {
+        const pkgAmount = parseInt(order.pkgId.replace('pkg', ''), 10);
+        const monthlyReward = pkgAmount * 0.06;
+    
+        userData.walletBalance = (userData.walletBalance || 0) + monthlyReward;
+        await userData.save();
+    
+        order.rewardMonthsCompleted += 1;
+        order.lastRewardDate = new Date();
+    
+        if (order.rewardMonthsCompleted >= 3) {
+          order.rewardStatus = true;
+        }
+    
+        await Cashback.create({
+          user: order.user,
+          pkgId: order.pkgId,
+          amount: monthlyReward,
+          onlyBuy: true,
+          month: order.rewardMonthsCompleted,
+          remainingMonth: 3 - order.rewardMonthsCompleted,
+        });
+    
+        await order.save();
+      }
+    
+      continue;
+    }
+    
 
     const pkg = pkgRewards[order.pkgId];
     if (!pkg) continue;
