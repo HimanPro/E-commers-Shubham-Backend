@@ -24,7 +24,7 @@ exports.createOrder = async (req, res) => {
       image,
     } = req.body;
     const userId = req.user.id;
-    if (!amount || !pkgId || !name || !phone || !reference || !image) {
+    if (!amount || !pkgId || !name || !phone || !reference) {
       return res
         .status(400)
         .json({ success: false, message: "Missing required fields" });

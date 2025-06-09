@@ -19,10 +19,15 @@ const orderSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  rewardMonthsCompleted: {
+    type: Number,
+    default: 0
+  },
+  
 
 
   reference: { type: String, default: null , required: true},
-  qr: { type: String, default: null  , required: true},
+  qr: { type: String, default: null},
   
 
   name: { type: String, required: true },
