@@ -297,8 +297,8 @@ router.post("/verify-payment", async (req, res) => {
       let walletBonus = 0;
       let referrer = null;
 
-      if (details.referralId) {
-        referrer = await User.findOne({ userId: details.referralId });
+      if (!details.referralCode === null) {
+        referrer = await User.findOne({ userId: details.referralCode });
 
         if (!referrer) {
           return res.status(400).json({
@@ -312,6 +312,7 @@ router.post("/verify-payment", async (req, res) => {
         await details.save();
 
         referrer.referralBonus += 100;
+        referrer.walletBalance += 100;
         await referrer.save();
 
         await Referral.create({

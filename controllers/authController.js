@@ -138,19 +138,18 @@ exports.register = async (req, res) => {
 
     let walletBonus = 0;
 
-    // let referrer = null;
-    // if (details.referralId) {
-    //   referrer = await User.findOne({ userId: details.referralId });
+    let referrer = null;
+    if (details.referralId) {
+      referrer = await User.findOne({ userId: details.referralId });
 
-    //   if (!referrer) {
-    //     return res.status(400).json({
-    //       success: false,
-    //       message: "Invalid referral code",
-    //     });
-    //   }
+      if (!referrer) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid referral code",
+        });
+      }
 
-    //   walletBonus = 50; 
-    // }
+    }
 
     const user = await User.create({
       userId,
