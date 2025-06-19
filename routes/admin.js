@@ -262,8 +262,10 @@ router.get("/getInvestment", async (req, res) => {
 router.post("/verify-payment", async (req, res) => {
   try {
     const { orderId } = req.body;
+    console.log("Received request to verify payment for order ID:", orderId);
 
     if (!orderId) {
+      console.log("Missing orderId in request body.");
       return res
         .status(400)
         .json({ success: false, message: "Order ID is required" });
@@ -274,20 +276,27 @@ router.post("/verify-payment", async (req, res) => {
       { $set: { paymentStatus: true } },
       { new: true }
     );
+    console.log("Order after update:", order);
 
     if (!order) {
+      console.log("Order not found for ID:", orderId);
       return res
         .status(404)
         .json({ success: false, message: "Order not found" });
     }
 
     const userId = order.user;
+    console.log("User ID from order:", userId);
+
     const userOrders = await Order.find({ user: userId });
+    console.log("Total orders for user:", userOrders.length);
 
     if (userOrders.length === 1) {
       const details = await User.findOne({ userId });
+      console.log("User details:", details);
 
       if (!details) {
+        console.log("User not found in DB with userId:", userId);
         return res.status(404).json({
           success: false,
           message: "User not found",
@@ -297,10 +306,16 @@ router.post("/verify-payment", async (req, res) => {
       let walletBonus = 0;
       let referrer = null;
 
-      if (!details.referralCode === null) {
+      // ❌ Incorrect check: (!details.referralCode === null)
+      // ✅ Correct check:
+      if (details.referralCode) {
+        console.log("Referral code found:", details.referralCode);
+
         referrer = await User.findOne({ userId: details.referralCode });
+        console.log("Referrer details:", referrer);
 
         if (!referrer) {
+          console.log("Invalid referral code:", details.referralCode);
           return res.status(400).json({
             success: false,
             message: "Invalid referral code",
@@ -310,10 +325,12 @@ router.post("/verify-payment", async (req, res) => {
         walletBonus = 50;
         details.walletBalance += walletBonus;
         await details.save();
+        console.log("Updated user wallet balance:", details.walletBalance);
 
         referrer.referralBonus += 100;
         referrer.walletBalance += 100;
         await referrer.save();
+        console.log("Updated referrer wallet and bonus:", referrer.walletBalance, referrer.referralBonus);
 
         await Referral.create({
           referrer: referrer.userId,
@@ -322,6 +339,9 @@ router.post("/verify-payment", async (req, res) => {
           status: "credited",
           creditedAt: new Date(),
         });
+        console.log("Referral bonus credited.");
+      } else {
+        console.log("No referral code found, skipping referral logic.");
       }
     }
 
@@ -335,6 +355,7 @@ router.post("/verify-payment", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
 
 router.post("/dispatch-purchase", async (req, res) => {
   try {
