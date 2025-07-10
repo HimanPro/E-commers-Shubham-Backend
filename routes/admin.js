@@ -310,8 +310,6 @@ router.post("/verify-payment", async (req, res) => {
           });
         }
 
-        walletBonus = 50;
-        details.walletBalance += walletBonus;
         await details.save();
 
         referrer.referralBonus += 100;
