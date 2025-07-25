@@ -295,7 +295,7 @@ router.post("/verify-payment", async (req, res) => {
         });
       }
 
-      let walletBonus = 0;
+      // let walletBonus = 0;
       let referrer = null;
 
 
@@ -312,8 +312,8 @@ router.post("/verify-payment", async (req, res) => {
 
         await details.save();
 
-        referrer.referralBonus += 100;
-        referrer.walletBalance += 100;
+        referrer.referralBonus += userOrders.totalAmount*.08;
+        referrer.walletBalance += userOrders.totalAmount*.08;
         await referrer.save();
 
         await Referral.create({
