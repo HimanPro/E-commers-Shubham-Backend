@@ -302,6 +302,7 @@ router.post("/verify-payment", async (req, res) => {
       if (details.referralCode) {
 
         referrer = await User.findOne({ userId: details.referralCode });
+        report = await Referral.findOne({ referee: details.userId });
 
         if (!referrer) {
           return res.status(400).json({
@@ -316,13 +317,17 @@ router.post("/verify-payment", async (req, res) => {
         referrer.walletBalance += userOrders.totalAmount*.08;
         await referrer.save();
 
-        await Referral.create({
-          referrer: referrer.userId,
-          referee: details.userId,
-          bonusAmount: 100,
-          status: "credited",
-          creditedAt: new Date(),
-        });
+        report.bonusAmount = userOrders.totalAmount*.08;
+        report.status = "credited";
+        await report.save();
+
+        // await Referral.create({
+        //   referrer: referrer.userId,
+        //   referee: details.userId,
+        //   bonusAmount: userOrders.totalAmount*.08,
+        //   status: "credited",
+        //   creditedAt: new Date(),
+        // });
       } else {
         console.log("No referral code found, skipping referral logic.");
       }

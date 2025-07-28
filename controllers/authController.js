@@ -162,18 +162,19 @@ exports.register = async (req, res) => {
       referralBonus: 0,
     });
 
-    // if (referrer) {
-    //   referrer.referralBonus += 100;
-    //   await referrer.save();
+    if (referrer) {
+      // referrer.referralBonus += 100;
+      // await referrer.save();
 
-    //   await Referral.create({
-    //     referrer: referrer.userId,
-    //     referee: user.userId,
-    //     bonusAmount: 100,
-    //     status: "credited",
-    //     creditedAt: new Date(),
-    //   });
-    // }
+      await Referral.create({
+        referrer: referrer.userId,
+        name: referrer.name,
+        referee: user.userId,
+        bonusAmount: 0, // Assuming you want to set this later
+        // status: "pending",
+        creditedAt: new Date(),
+      });
+    }
 
     res.status(201).json({
       success: true,
