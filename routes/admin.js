@@ -264,9 +264,7 @@ router.post("/verify-payment", async (req, res) => {
     const { orderId } = req.body;
 
     if (!orderId) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Order ID is required" });
+      return res.status(400).json({ success: false, message: "Order ID is required" });
     }
 
     const order = await Order.findByIdAndUpdate(
@@ -276,65 +274,50 @@ router.post("/verify-payment", async (req, res) => {
     );
 
     if (!order) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Order not found" });
+      return res.status(404).json({ success: false, message: "Order not found" });
     }
 
     const userId = order.user;
-
     const userOrders = await Order.find({ user: userId });
 
+    // First order logic
     if (userOrders.length === 1) {
-      const details = await User.findOne({ userId });
+      const user = await User.findOne({ userId });
 
-      if (!details) {
-        return res.status(404).json({
-          success: false,
-          message: "User not found",
-        });
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
       }
 
-      // let walletBonus = 0;
       let referrer = null;
       let report = null;
 
-      if (details.referralCode) {
-        referrer = await User.findOne({ userId: details.referralCode });
-        report = await Referral.findOne({ referee: details.userId });
+      if (user.referralCode) {
+        referrer = await User.findOne({ userId: user.referralCode });
+        report = await Referral.findOne({ referee: user.userId });
 
         if (!referrer) {
-          return res.status(400).json({
-            success: false,
-            message: "Invalid referral code",
-          });
+          return res.status(400).json({ success: false, message: "Invalid referral code" });
         }
 
-        const totalAmount = Number(userOrders?.totalAmount || 0);
-
+        const totalAmount = Number(order?.totalAmount || 0);
         const bonusAmount = totalAmount * 0.08;
 
-        // Validate numbers
         if (
           isNaN(bonusAmount) ||
           isNaN(referrer.referralBonus) ||
           isNaN(referrer.walletBalance)
         ) {
-          console.error(
-            "Bonus calculation failed due to invalid number values",
-            {
-              totalAmount,
-              bonusAmount,
-              referrer: {
-                referralBonus: referrer.referralBonus,
-                walletBalance: referrer.walletBalance,
-              },
-            }
-          );
+          console.error("Bonus calculation failed due to invalid values", {
+            totalAmount,
+            bonusAmount,
+            referrer: {
+              referralBonus: referrer.referralBonus,
+              walletBalance: referrer.walletBalance,
+            },
+          });
           return res.status(500).json({
             success: false,
-            message:
-              "Internal error: Invalid numeric values for referral bonus",
+            message: "Internal error: Invalid numeric values for referral bonus",
           });
         }
 
@@ -349,7 +332,7 @@ router.post("/verify-payment", async (req, res) => {
         } else {
           await Referral.create({
             referrer: referrer.userId,
-            referee: details.userId,
+            referee: user.userId,
             bonusAmount,
             status: "credited",
             creditedAt: new Date(),
@@ -360,16 +343,17 @@ router.post("/verify-payment", async (req, res) => {
       }
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Payment verified successfully",
       order,
     });
   } catch (error) {
     console.error("Verify Payment Error:", error);
-    res.status(500).json({ success: false, message: "Server error" });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
 
 router.post("/dispatch-purchase", async (req, res) => {
   try {
