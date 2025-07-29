@@ -168,7 +168,7 @@ exports.register = async (req, res) => {
 
       await Referral.create({
         referrer: referrer.userId,
-        name: referrer.name,
+        name: user.name,
         referee: user.userId,
         bonusAmount: 0, // Assuming you want to set this later
         // status: "pending",
