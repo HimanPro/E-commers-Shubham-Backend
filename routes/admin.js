@@ -310,9 +310,8 @@ router.post("/verify-payment", async (req, res) => {
           });
         }
 
-        await details.save();
-
         const totalAmount = Number(userOrders?.totalAmount || 0);
+
         const bonusAmount = totalAmount * 0.08;
 
         // Validate numbers
