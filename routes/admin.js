@@ -297,6 +297,7 @@ router.post("/verify-payment", async (req, res) => {
 
       // let walletBonus = 0;
       let referrer = null;
+      let report = null;
 
 
       if (details.referralCode) {
