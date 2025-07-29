@@ -329,14 +329,6 @@ router.post("/verify-payment", async (req, res) => {
           report.bonusAmount = bonusAmount;
           report.status = "credited";
           await report.save();
-        } else {
-          await Referral.create({
-            referrer: referrer.userId,
-            referee: user.userId,
-            bonusAmount,
-            status: "credited",
-            creditedAt: new Date(),
-          });
         }
       } else {
         console.log("No referral code found, skipping referral logic.");
