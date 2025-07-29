@@ -312,7 +312,32 @@ router.post("/verify-payment", async (req, res) => {
 
         await details.save();
 
-        const bonusAmount = userOrders.totalAmount * 0.08;
+        const totalAmount = Number(userOrders?.totalAmount || 0);
+        const bonusAmount = totalAmount * 0.08;
+
+        // Validate numbers
+        if (
+          isNaN(bonusAmount) ||
+          isNaN(referrer.referralBonus) ||
+          isNaN(referrer.walletBalance)
+        ) {
+          console.error(
+            "Bonus calculation failed due to invalid number values",
+            {
+              totalAmount,
+              bonusAmount,
+              referrer: {
+                referralBonus: referrer.referralBonus,
+                walletBalance: referrer.walletBalance,
+              },
+            }
+          );
+          return res.status(500).json({
+            success: false,
+            message:
+              "Internal error: Invalid numeric values for referral bonus",
+          });
+        }
 
         referrer.referralBonus += bonusAmount;
         referrer.walletBalance += bonusAmount;
