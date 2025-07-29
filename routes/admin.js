@@ -299,9 +299,7 @@ router.post("/verify-payment", async (req, res) => {
       let referrer = null;
       let report = null;
 
-
       if (details.referralCode) {
-
         referrer = await User.findOne({ userId: details.referralCode });
         report = await Referral.findOne({ referee: details.userId });
 
@@ -314,21 +312,25 @@ router.post("/verify-payment", async (req, res) => {
 
         await details.save();
 
-        referrer.referralBonus += userOrders.totalAmount*.08;
-        referrer.walletBalance += userOrders.totalAmount*.08;
+        const bonusAmount = userOrders.totalAmount * 0.08;
+
+        referrer.referralBonus += bonusAmount;
+        referrer.walletBalance += bonusAmount;
         await referrer.save();
 
-        report.bonusAmount = userOrders.totalAmount*.08;
-        report.status = "credited";
-        await report.save();
-
-        // await Referral.create({
-        //   referrer: referrer.userId,
-        //   referee: details.userId,
-        //   bonusAmount: userOrders.totalAmount*.08,
-        //   status: "credited",
-        //   creditedAt: new Date(),
-        // });
+        if (report) {
+          report.bonusAmount = bonusAmount;
+          report.status = "credited";
+          await report.save();
+        } else {
+          await Referral.create({
+            referrer: referrer.userId,
+            referee: details.userId,
+            bonusAmount,
+            status: "credited",
+            creditedAt: new Date(),
+          });
+        }
       } else {
         console.log("No referral code found, skipping referral logic.");
       }
@@ -344,7 +346,6 @@ router.post("/verify-payment", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
-
 
 router.post("/dispatch-purchase", async (req, res) => {
   try {
