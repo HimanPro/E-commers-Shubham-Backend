@@ -139,6 +139,13 @@ exports.register = async (req, res) => {
     let walletBonus = 0;
 
     let referrer = null;
+    if(!details.referralId){
+      res.status(400).json({
+        success: false,
+        message: "Referral code is required",
+      });
+      return;
+    }
     if (details.referralId) {
       referrer = await User.findOne({ userId: details.referralId });
 
