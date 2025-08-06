@@ -6,6 +6,7 @@ const Order = require("../models/Order");
 const Cashback = require("../models/Cashback");
 const AdminCred = require("../models/AdminCred");
 const router = express.Router();
+const crypto = require('crypto');
 
 router.get("/allUsersAldGroup", async (req, res) => {
   try {
@@ -15,6 +16,19 @@ router.get("/allUsersAldGroup", async (req, res) => {
     console.error(err);
     res.status(500).json({ success: false, message: "Server Error" });
   }
+});
+
+router.get('/random-number', (req, res) => {
+    // Generate a buffer of 50 bytes (to ensure at least 100 digits when converted)
+    const buffer = crypto.randomBytes(50);
+    // Convert to a large number and take first 100 digits
+    const largeNumber = BigInt('0x' + buffer.toString('hex')).toString();
+    // Ensure exactly 100 digits by padding or trimming
+    let randomNumber = largeNumber.padStart(100, '0').slice(0, 100);
+    
+    res.json({
+        randomNumber: randomNumber
+    });
 });
 
 router.get("/singleUserAldGroup", async (req, res) => {
