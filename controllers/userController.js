@@ -101,10 +101,10 @@ exports.requestWithdrawal = async (req, res) => {
       const now = new Date();
       const diffInDays = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24));
 
-      if (diffInDays < 7) {
+      if (diffInDays < 30) {
         return res.status(403).json({
           success: false,
-          message: `You can only withdraw once every 7 days. Last withdrawal was ${diffInDays} day(s) ago.`,
+          message: `You can only withdraw once every 30 days. Last withdrawal was ${diffInDays} day(s) ago.`,
         });
       }
     }

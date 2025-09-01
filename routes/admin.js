@@ -292,61 +292,66 @@ router.post("/verify-payment", async (req, res) => {
     }
 
     const userId = order.user;
-    const userOrders = await Order.find({ user: userId });
+    const user = await User.findOne({ userId });
 
-    // First order logic
-    if (userOrders.length === 1) {
-      const user = await User.findOne({ userId });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
 
-      if (!user) {
-        return res.status(404).json({ success: false, message: "User not found" });
+    let referrer = null;
+    let report = null;
+
+    if (user.referralCode) {
+      referrer = await User.findOne({ userId: user.referralCode });
+      report = await Referral.findOne({ referee: user.userId });
+
+      if (!referrer) {
+        return res.status(400).json({ success: false, message: "Invalid referral code" });
       }
 
-      let referrer = null;
-      let report = null;
+      const totalAmount = Number(order?.totalAmount || 0);
+      const bonusAmount = totalAmount * 0.08;
 
-      if (user.referralCode) {
-        referrer = await User.findOne({ userId: user.referralCode });
-        report = await Referral.findOne({ referee: user.userId });
+      if (
+        isNaN(bonusAmount) ||
+        isNaN(referrer.referralBonus) ||
+        isNaN(referrer.walletBalance)
+      ) {
+        console.error("Bonus calculation failed due to invalid values", {
+          totalAmount,
+          bonusAmount,
+          referrer: {
+            referralBonus: referrer.referralBonus,
+            walletBalance: referrer.walletBalance,
+          },
+        });
+        return res.status(500).json({
+          success: false,
+          message: "Internal error: Invalid numeric values for referral bonus",
+        });
+      }
 
-        if (!referrer) {
-          return res.status(400).json({ success: false, message: "Invalid referral code" });
-        }
+      // ✅ Always give 8% referral bonus for every order
+      referrer.referralBonus += bonusAmount;
+      referrer.walletBalance += bonusAmount;
+      await referrer.save();
 
-        const totalAmount = Number(order?.totalAmount || 0);
-        const bonusAmount = totalAmount * 0.08;
-
-        if (
-          isNaN(bonusAmount) ||
-          isNaN(referrer.referralBonus) ||
-          isNaN(referrer.walletBalance)
-        ) {
-          console.error("Bonus calculation failed due to invalid values", {
-            totalAmount,
-            bonusAmount,
-            referrer: {
-              referralBonus: referrer.referralBonus,
-              walletBalance: referrer.walletBalance,
-            },
-          });
-          return res.status(500).json({
-            success: false,
-            message: "Internal error: Invalid numeric values for referral bonus",
-          });
-        }
-
-        referrer.referralBonus += bonusAmount;
-        referrer.walletBalance += bonusAmount;
-        await referrer.save();
-
-        if (report) {
-          report.bonusAmount = bonusAmount;
-          report.status = "credited";
-          await report.save();
-        }
+      if (report) {
+        // You might want to store cumulative bonus OR create new reports per order
+        report.bonusAmount = (report.bonusAmount || 0) + bonusAmount;
+        report.status = "credited";
+        await report.save();
       } else {
-        console.log("No referral code found, skipping referral logic.");
+        // If no report exists, create one
+        await Referral.create({
+          referee: user.userId,
+          referrer: referrer.userId,
+          bonusAmount,
+          status: "credited",
+        });
       }
+    } else {
+      console.log("No referral code found, skipping referral logic.");
     }
 
     return res.status(200).json({
@@ -359,6 +364,7 @@ router.post("/verify-payment", async (req, res) => {
     return res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
 
 
 router.post("/dispatch-purchase", async (req, res) => {

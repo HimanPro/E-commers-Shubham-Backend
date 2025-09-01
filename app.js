@@ -60,8 +60,6 @@ const pkgRewards = {
 const getIncome = async (userId) => {
   const orderData = await Order.find({ user: userId }).sort({ createdAt: -1 });
   if (!orderData) return;
-  
-  // if(orderData.paymentStatus === false) return;
 
   const userData = await User.findOne({ userId });
   if (!userData) return;
@@ -69,30 +67,32 @@ const getIncome = async (userId) => {
   for (let i = 0; i < orderData.length; i++) {
     const order = orderData[i];
 
-    if (order.paymentStatus === false) continue; // Skip unpaid orders
-    if (order.rewardStatus === true) continue; // Skip if reward already completed
+    if (order.paymentStatus === false) continue; // Skip unpaid
+    if (order.rewardStatus === true) continue; // Skip if completed
+
+    // ✅ Handle "onlyBuy" logic
     if (order.onlyBuy === true) {
       if (!order.rewardMonthsCompleted) order.rewardMonthsCompleted = 0;
-    
+
       const orderDate = new Date(order.createdAt);
       const currentDate = new Date();
-    
-      const monthsPassed = Math.floor((currentDate - orderDate) / (1000 * 60 * 60 * 24 * 30));
-    
+      const monthsPassed = Math.floor(
+        (currentDate - orderDate) / (1000 * 60 * 60 * 24 * 30)
+      );
+
       if (monthsPassed >= order.rewardMonthsCompleted + 1 && order.rewardMonthsCompleted < 3) {
         const pkgAmount = parseInt(order.pkgId.replace('pkg', ''), 10);
         const monthlyReward = pkgAmount * 0.06;
-    
+
         userData.walletBalance = (userData.walletBalance || 0) + monthlyReward;
         await userData.save();
-    
+
         order.rewardMonthsCompleted += 1;
         order.lastRewardDate = new Date();
-    
         if (order.rewardMonthsCompleted >= 3) {
           order.rewardStatus = true;
         }
-    
+
         await Cashback.create({
           user: order.user,
           pkgId: order.pkgId,
@@ -101,49 +101,93 @@ const getIncome = async (userId) => {
           month: order.rewardMonthsCompleted,
           remainingMonth: 3 - order.rewardMonthsCompleted,
         });
-    
+
         await order.save();
       }
-    
       continue;
     }
-    
 
-    const pkg = pkgRewards[order.pkgId];
-    if (!pkg) continue;
+    // ✅ Handle Custom Package Plan
+    if (order.pkgId === "custom_pkg") {
+      const totalDays = 200;
+      const today = new Date().toDateString();
+      const lastRewardDate = order.lastRewardDate
+        ? new Date(order.lastRewardDate).toDateString()
+        : null;
 
-    // Check if today's reward is already given
-    const today = new Date().toDateString();
-    const lastRewardDate = order.lastRewardDate ? new Date(order.lastRewardDate).toDateString() : null;
+      if (today === lastRewardDate) continue; // already rewarded today
 
-    if (today === lastRewardDate) continue; // Already rewarded today  
-    
-    if (order.rewardDaysCompleted >= pkg.days) {
-      order.rewardStatus = true; // Reward period over
+      if (order.rewardDaysCompleted >= totalDays) {
+        order.rewardStatus = true;
+        await order.save();
+        continue;
+      }
+
+      // Daily ROI = 0.75% of invested amount
+      const dailyReward = order.amount * 0.0075;
+
+      // Credit to wallet
+      userData.walletBalance = (userData.walletBalance || 0) + dailyReward;
+      await userData.save();
+
+      // Update order
+      order.rewardDaysCompleted = (order.rewardDaysCompleted || 0) + 1;
+      order.lastRewardDate = new Date();
+      if (order.rewardDaysCompleted >= totalDays) {
+        order.rewardStatus = true;
+      }
+
+      await Cashback.create({
+        user: order.user,
+        pkgId: order.pkgId,
+        amount: dailyReward,
+        day: order.rewardDaysCompleted,
+        remainingDay: totalDays - order.rewardDaysCompleted,
+      });
+
       await order.save();
       continue;
     }
 
-    // Credit reward
+    // ✅ Handle Old Fixed Packages
+    const pkg = pkgRewards[order.pkgId];
+    if (!pkg) continue;
+
+    const today = new Date().toDateString();
+    const lastRewardDate = order.lastRewardDate
+      ? new Date(order.lastRewardDate).toDateString()
+      : null;
+
+    if (today === lastRewardDate) continue; // already rewarded today
+
+    if (order.rewardDaysCompleted >= pkg.days) {
+      order.rewardStatus = true;
+      await order.save();
+      continue;
+    }
+
+    // Credit reward (fixed reward per day)
     userData.walletBalance = (userData.walletBalance || 0) + pkg.reward;
     await userData.save();
 
-    // Update order
     order.rewardDaysCompleted += 1;
     order.lastRewardDate = new Date();
     if (order.rewardDaysCompleted >= pkg.days) {
       order.rewardStatus = true;
     }
+
     await Cashback.create({
       user: order.user,
-      pkgId:order.pkgId,
+      pkgId: order.pkgId,
       amount: pkg.reward,
       day: order.rewardDaysCompleted,
       remainingDay: pkg.days - order.rewardDaysCompleted,
-    })
+    });
+
     await order.save();
   }
 };
+
 
 // cron.schedule('*/20 * * * * *', async () => {
 
