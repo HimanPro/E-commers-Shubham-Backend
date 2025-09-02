@@ -108,46 +108,50 @@ const getIncome = async (userId) => {
     }
 
     // ✅ Handle Custom Package Plan
-    if (order.pkgId === "custom_pkg") {
-      const totalDays = 200;
-      const today = new Date().toDateString();
-      const lastRewardDate = order.lastRewardDate
-        ? new Date(order.lastRewardDate).toDateString()
-        : null;
+if (order.pkgId === "custom_pkg") {
+  const totalDays = 200;
+  const today = new Date().toDateString();
+  const lastRewardDate = order.lastRewardDate
+    ? new Date(order.lastRewardDate).toDateString()
+    : null;
 
-      if (today === lastRewardDate) continue; // already rewarded today
+  if (today === lastRewardDate) continue; // already rewarded today
 
-      if (order.rewardDaysCompleted >= totalDays) {
-        order.rewardStatus = true;
-        await order.save();
-        continue;
-      }
+  if (order.rewardDaysCompleted >= totalDays) {
+    order.rewardStatus = true;
+    await order.save();
+    continue;
+  }
 
-      // Daily ROI = 0.75% of invested amount
-      const dailyReward = order.amount * 0.0075;
+  // Daily ROI = 0.75% of invested amount
+  const investedAmount = Number(order.amount || order.totalAmount || 0);
+  if (!investedAmount || investedAmount <= 0) continue; // 🚨 skip invalid orders
 
-      // Credit to wallet
-      userData.walletBalance = (userData.walletBalance || 0) + dailyReward;
-      await userData.save();
+  const dailyReward = investedAmount * 0.0075;
 
-      // Update order
-      order.rewardDaysCompleted = (order.rewardDaysCompleted || 0) + 1;
-      order.lastRewardDate = new Date();
-      if (order.rewardDaysCompleted >= totalDays) {
-        order.rewardStatus = true;
-      }
+  // Credit to wallet
+  userData.walletBalance = Number(userData.walletBalance || 0) + dailyReward;
+  await userData.save();
 
-      await Cashback.create({
-        user: order.user,
-        pkgId: order.pkgId,
-        amount: dailyReward,
-        day: order.rewardDaysCompleted,
-        remainingDay: totalDays - order.rewardDaysCompleted,
-      });
+  // Update order
+  order.rewardDaysCompleted = (order.rewardDaysCompleted || 0) + 1;
+  order.lastRewardDate = new Date();
+  if (order.rewardDaysCompleted >= totalDays) {
+    order.rewardStatus = true;
+  }
 
-      await order.save();
-      continue;
-    }
+  await Cashback.create({
+    user: order.user,
+    pkgId: order.pkgId,
+    amount: dailyReward,
+    day: order.rewardDaysCompleted,
+    remainingDay: totalDays - order.rewardDaysCompleted,
+  });
+
+  await order.save();
+  continue;
+}
+
 
     // ✅ Handle Old Fixed Packages
     const pkg = pkgRewards[order.pkgId];
@@ -187,6 +191,8 @@ const getIncome = async (userId) => {
     await order.save();
   }
 };
+
+// getIncome("ALD-cgA935-125");
 
 
 // cron.schedule('*/20 * * * * *', async () => {
